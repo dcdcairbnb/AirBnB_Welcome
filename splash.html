@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music City Retreat - Guest WiFi</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, #2B1055 0%, #7597DE 30%, #FF5E62 65%, #FFB86C 100%);
+    padding: 20px;
+  }
+
+  .card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 440px;
+    overflow: hidden;
+  }
+
+  .hero {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .content {
+    padding: 32px 32px 40px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .emoji {
+    font-size: 44px;
+    margin-bottom: 8px;
+    color: #000000;
+    line-height: 1;
+  }
+
+  h1 {
+    color: #2d1b3d;
+    font-size: 26px;
+    margin-bottom: 6px;
+  }
+
+  .subtitle {
+    color: #6b5b73;
+    font-size: 15px;
+  }
+
+  .field {
+    margin-bottom: 18px;
+  }
+
+  label {
+    display: block;
+    color: #2d1b3d;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #e5e0e8;
+    border-radius: 8px;
+    font-size: 15px;
+    background: #ffffff;
+    color: #2d1b3d;
+    transition: border-color 0.2s;
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: #FF5E62;
+  }
+
+  .error {
+    color: #c0392b;
+    font-size: 13px;
+    margin-top: 4px;
+    display: none;
+  }
+
+  .error.show {
+    display: block;
+  }
+
+  button {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #FF5E62 0%, #FF9966 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(255, 94, 98, 0.45);
+  }
+
+  button:active {
+    transform: translateY(0);
+  }
+
+  .success {
+    display: none;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .success.show {
+    display: block;
+  }
+
+  .success h2 {
+    color: #2d1b3d;
+    margin-bottom: 10px;
+  }
+
+  .success p {
+    color: #6b5b73;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <img src="living-room.jpg" alt="Music City Retreat" class="hero">
+    <div class="content">
+    <div id="formView">
+      <div class="header">
+        <div class="emoji">&#9835;</div>
+        <h1>Music City Retreat</h1>
+        <p class="subtitle">Connect to our guest WiFi</p>
+      </div>
+
+      <form id="guestForm" novalidate>
+        <div class="field">
+          <label for="name">Guest Name</label>
+          <input type="text" id="name" name="name" placeholder="Your full name">
+          <div class="error" id="nameError">Please enter your name.</div>
+        </div>
+
+        <div class="field">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com">
+          <div class="error" id="emailError">Please enter a valid email.</div>
+        </div>
+
+        <div class="field">
+          <label for="stay">Length of Stay</label>
+          <select id="stay" name="stay">
+            <option value="">Select your stay</option>
+            <option value="1 night">1 night</option>
+            <option value="2-3 nights">2-3 nights</option>
+            <option value="4-7 nights">4-7 nights</option>
+            <option value="1-2 weeks">1-2 weeks</option>
+            <option value="2+ weeks">2+ weeks</option>
+          </select>
+          <div class="error" id="stayError">Please select your length of stay.</div>
+        </div>
+
+        <button type="submit">Connect to WiFi</button>
+      </form>
+    </div>
+
+    <div class="success" id="successView">
+      <div class="emoji">&#10003;</div>
+      <h2>Thank you!</h2>
+      <p>Check your email to verify your access.</p>
+    </div>
+    </div>
+  </div>
+
+<script>
+  const form = document.getElementById('guestForm');
+  const nameField = document.getElementById('name');
+  const emailField = document.getElementById('email');
+  const stayField = document.getElementById('stay');
+  const nameError = document.getElementById('nameError');
+  const emailError = document.getElementById('emailError');
+  const stayError = document.getElementById('stayError');
+  const formView = document.getElementById('formView');
+  const successView = document.getElementById('successView');
+
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxYneJMWNnhuVd135ICINzIni3DB-EcFVx-r34JpH1IS6Mvjkga7I0tNpa7BXPhT-kIcw/exec';
+
+  function validateEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    let valid = true;
+
+    nameError.classList.remove('show');
+    emailError.classList.remove('show');
+    stayError.classList.remove('show');
+
+    if (!nameField.value.trim()) {
+      nameError.classList.add('show');
+      valid = false;
+    }
+    if (!validateEmail(emailField.value.trim())) {
+      emailError.classList.add('show');
+      valid = false;
+    }
+    if (!stayField.value) {
+      stayError.classList.add('show');
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    const payload = {
+      name: nameField.value.trim(),
+      email: emailField.value.trim(),
+      stay: stayField.value
+    };
+
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(function () {});
+
+    formView.style.display = 'none';
+    successView.classList.add('show');
+
+    setTimeout(function () {
+      window.location.href = 'http://192.168.0.217/welcome_sign.html';
+    }, 3000);
+  });
+</script>
+</body>
+</html>
