@@ -4,120 +4,229 @@
 <meta charset="utf-8" />
 <meta http-equiv="refresh" content="3600" />
 <title>Welcome</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0b1f2a;
-    --panel: #122c3a;
-    --ink: #f5efe0;
-    --accent: #e8a03a;
-    --muted: #a9b8c0;
+    --bg: #0a1a24;
+    --panel: #143042;
+    --panel-hi: #1a3c52;
+    --ink: #fbf6ea;
+    --accent: #f4b752;
+    --accent-hi: #ffd27a;
+    --muted: #b8c6ce;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    background: var(--bg);
+    font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    background: radial-gradient(ellipse at top, #153042 0%, var(--bg) 55%);
     color: var(--ink);
     min-height: 100vh;
     padding: 4vh 5vw;
+    -webkit-font-smoothing: antialiased;
   }
   header {
     text-align: center;
-    margin-bottom: 4vh;
+    margin-bottom: 5vh;
   }
   h1 {
-    font-size: 5.5vw;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 8vw;
+    font-weight: 900;
     margin: 0 0 1vh 0;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.04em;
+    line-height: 0.95;
+    background: linear-gradient(180deg, #ffe3a8 0%, #f4b752 55%, #d48a1f 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 4px 40px rgba(244, 183, 82, 0.25);
   }
   .sub {
-    font-size: 2vw;
-    color: var(--accent);
+    font-size: 2.4vw;
+    font-weight: 600;
+    color: var(--ink);
     margin: 0;
+    letter-spacing: -0.01em;
   }
   .dates {
-    font-size: 1.3vw;
+    font-size: 1.2vw;
     color: var(--muted);
-    margin-top: 1vh;
+    margin-top: 1.2vh;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    font-weight: 500;
   }
   h2 {
-    font-size: 2.4vw;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 3.2vw;
+    font-weight: 900;
+    font-style: italic;
+    color: var(--accent-hi);
     border-bottom: 2px solid var(--accent);
-    padding-bottom: 0.5vh;
-    margin-top: 5vh;
+    padding-bottom: 0.6vh;
+    margin-top: 6vh;
+    letter-spacing: -0.02em;
   }
   ul {
     list-style: none;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.2vw;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.4vw;
   }
   .card {
-    background: var(--panel);
+    background: linear-gradient(145deg, var(--panel-hi) 0%, var(--panel) 100%);
     border-left: 4px solid var(--accent);
-    padding: 1.5vh 1.5vw;
-    border-radius: 4px;
+    padding: 2vh 1.8vw;
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
   }
   h4 {
-    margin: 0 0 0.5vh 0;
-    font-size: 1.4vw;
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    margin: 0 0 0.6vh 0;
+    font-size: 1.55vw;
+    color: var(--accent-hi);
+    letter-spacing: -0.015em;
   }
   .blurb {
-    margin: 0 0 0.5vh 0;
-    font-size: 1.1vw;
+    margin: 0 0 0.6vh 0;
+    font-size: 1.15vw;
+    font-weight: 400;
+    line-height: 1.45;
+    color: var(--ink);
   }
   .detail {
     margin: 0;
     color: var(--muted);
     font-size: 1vw;
+    line-height: 1.4;
   }
   .distance {
-    margin: 0.4vh 0 0 0;
+    margin: 0.6vh 0 0 0;
     color: var(--accent);
-    font-size: 0.95vw;
-    font-weight: 600;
+    font-size: 0.85vw;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
   }
   .hours {
-    margin: 0 0 0.5vh 0;
-    color: var(--accent);
-    font-size: 1.05vw;
-    font-weight: 700;
-    letter-spacing: 0.02em;
+    margin: 0 0 0.6vh 0;
+    color: var(--accent-hi);
+    font-size: 0.95vw;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
   }
   .house {
-    background: var(--panel);
-    padding: 2vh 2vw;
-    border-radius: 6px;
+    background: linear-gradient(145deg, var(--panel-hi) 0%, var(--panel) 100%);
+    padding: 2.5vh 2vw;
+    border-radius: 10px;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1vh 2vw;
-    font-size: 1.1vw;
+    gap: 1.5vh 2vw;
+    font-size: 1.2vw;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .house strong {
+    color: var(--accent-hi);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.85vw;
+    letter-spacing: 0.2em;
+    display: block;
+    margin-bottom: 0.3vh;
+  }
+  .also-check-out {
+    margin-top: 7vh;
+    padding: 2.5vh 2vw;
+    background: linear-gradient(145deg, var(--panel-hi) 0%, var(--panel) 100%);
+    border-radius: 10px;
+    border-left: 4px solid var(--accent);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2vw;
+    align-items: center;
+  }
+  .also-check-out .lead {
+    color: var(--accent-hi);
+    text-transform: uppercase;
+    font-size: 0.8vw;
+    letter-spacing: 0.25em;
+    font-weight: 700;
+    margin: 0 0 0.8vh 0;
+  }
+  .also-check-out h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 2.4vw;
+    font-weight: 900;
+    margin: 0 0 0.6vh 0;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+  .also-check-out .tagline {
+    margin: 0 0 0.8vh 0;
+    color: var(--ink);
+    font-size: 1.15vw;
+    line-height: 1.4;
+  }
+  .also-check-out .where {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95vw;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-weight: 600;
+  }
+  .qr-block {
+    text-align: center;
+  }
+  .qr-block img {
+    background: #fff;
+    padding: 1vh;
+    border-radius: 8px;
+    width: 14vw;
+    max-width: 180px;
+    height: auto;
+    display: block;
+  }
+  .qr-block .scan-label {
+    margin-top: 0.6vh;
+    color: var(--muted);
+    font-size: 0.75vw;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    font-weight: 600;
   }
   footer {
-    margin-top: 5vh;
+    margin-top: 6vh;
     text-align: center;
     color: var(--muted);
-    font-size: 0.9vw;
+    font-size: 0.85vw;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
   }
 </style>
 </head>
 <body>
   <header>
     <h1>Welcome.</h1>
-    <p class="sub">Your stay is through Wednesday, April 22.</p>
-    <p class="dates">Nashville TN</p>
+    <p class="sub">You are home through Wednesday, April 22.</p>
+    <p class="dates">Germantown, Nashville</p>
   </header>
 
   <section>
     <h2>House info</h2>
-    
+
     <div class="house">
       <div><strong>Wi-Fi:</strong> Scan the QR code on the fridge.</div>
       <div><strong>Checkout:</strong> 10:00 AM</div>
       <div><strong>Contact:</strong> Text Dan at 816-686-5888 for anything urgent.</div>
     </div>
-    
+
   </section>
 
   <section>
@@ -182,6 +291,18 @@
 <p class="blurb">Rotisserie and fried chicken, big beer list, fast casual.</p>
 <p class="detail">1120 4th Ave N Suite 103, Germantown.</p>
 <p class="distance">0.5 mi, 10 min walk</p>
+</li>
+<li class="card">
+<h4>Bastion</h4>
+<p class="blurb">24-seat tasting counter in Wedgewood-Houston, back-bar nachos and game-focused menu.</p>
+<p class="detail">434 Houston St, Wedgewood-Houston.</p>
+<p class="distance">2.6 mi, 9 min drive</p>
+</li>
+<li class="card">
+<h4>Husk</h4>
+<p class="blurb">Sean Brock's Southern flagship, seasonal menus with heirloom ingredients.</p>
+<p class="detail">37 Rutledge St, Rutledge Hill.</p>
+<p class="distance">2.3 mi, 8 min drive</p>
 </li>
     </ul>
   </section>
@@ -327,7 +448,19 @@
 <p class="detail">401 Korean Veterans Blvd, SoBro.</p>
 <p class="distance">2.0 mi, 7 min drive</p>
 </li>
-    </ul>
+<li class="card">
+<h4>Acme Feed &amp; Seed Rooftop</h4>
+<p class="blurb">Four-story Broadway venue, river and skyline views from the top floor.</p>
+<p class="detail">101 Broadway, downtown.</p>
+<p class="distance">1.8 mi, 7 min drive</p>
+</li>
+<li class="card">
+<h4>L27 Rooftop Lounge</h4>
+<p class="blurb">Glass-wrapped rooftop at The Westin, panoramic downtown skyline views.</p>
+<p class="detail">807 Clark Pl, downtown.</p>
+<p class="distance">1.9 mi, 7 min drive</p>
+</li>
+</ul>
   </section>
 
   <section>
@@ -383,11 +516,34 @@
 <p class="detail">2500 West End Ave. Full-scale Parthenon replica, lake, and walking paths.</p>
 <p class="distance">2.8 mi, 10 min drive</p>
 </li>
+<li class="card">
+<h4>Frist Art Museum</h4>
+<p class="detail">919 Broadway, downtown. Art Deco post office building with rotating exhibitions.</p>
+<p class="distance">1.6 mi, 6 min drive</p>
+</li>
+<li class="card">
+<h4>John Seigenthaler Pedestrian Bridge</h4>
+<p class="detail">Walk across the Cumberland River for the best skyline photo of downtown.</p>
+<p class="distance">1.5 mi, 5 min drive to the bridge</p>
+</li>
     </ul>
   </section>
 
+  <section class="also-check-out">
+    <div>
+      <p class="lead">Also check out our place in the mountains</p>
+      <h3>River West</h3>
+      <p class="tagline">Your Rocky Mountain basecamp for skiing, hiking, and river days.</p>
+      <p class="where">Silverthorne, Colorado</p>
+    </div>
+    <div class="qr-block">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&amp;data=https%3A%2F%2Fwww.airbnb.com%2Frooms%2F920827114586721400" alt="Scan to view River West on Airbnb">
+      <p class="scan-label">Scan to view</p>
+    </div>
+  </section>
+
   <footer>
-    Updated 2026-04-19 17:48
+    Updated 2026-04-19 15:25
   </footer>
 </body>
 </html>
