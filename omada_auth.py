@@ -12,7 +12,7 @@ Flow:
 import os
 import json
 import logging
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 import requests
 import urllib3
 
@@ -25,6 +25,12 @@ OPERATOR_PASS = os.environ.get("OMADA_PASS", "Deaboss1203!")
 SESSION_DURATION_MS = int(os.environ.get("SESSION_MS", "14400000"))  # 4 hours
 LISTEN_HOST = os.environ.get("LISTEN_HOST", "127.0.0.1")
 LISTEN_PORT = int(os.environ.get("LISTEN_PORT", "5000"))
+APPS_SCRIPT_URL = os.environ.get(
+    "APPS_SCRIPT_URL",
+    "https://script.google.com/macros/s/AKfycbxYneJMWNnhuVd135ICINzIni3DB-EcFVx-r34JpH1IS6Mvjkga7I0tNpa7BXPhT-kIcw/exec",
+)
+REDIRECT_URL = os.environ.get("REDIRECT_URL", "http://192.168.0.217/welcome_sign.html")
+REDIRECT_SECONDS = int(os.environ.get("REDIRECT_SECONDS", "3"))
 # --------------------------------------------------------------------
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -77,6 +83,70 @@ def authorize_guest(session, cid, token, payload):
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"ok": True, "service": "omada_auth"})
+
+
+def _verify_page_html(title, message, redirect_url=None):
+    meta = ''
+    script = ''
+    if redirect_url:
+        meta = '<meta http-equiv="refresh" content="{}; url={}">'.format(REDIRECT_SECONDS, redirect_url)
+        script = '<script>setTimeout(function(){{window.top.location.href="{}"}},{});</script>'.format(
+            redirect_url, REDIRECT_SECONDS * 1000
+        )
+    return (
+        '<!doctype html><html><head><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        + meta +
+        '<title>' + title + '</title>'
+        '<style>body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;'
+        'background:linear-gradient(160deg,#2B1055 0%,#7597DE 30%,#FF5E62 65%,#FFB86C 100%);'
+        'min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;margin:0}'
+        '.card{background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3);'
+        'padding:40px 32px;max-width:440px;width:100%;text-align:center;color:#2d1b3d}'
+        'h1{margin:0 0 12px 0;font-size:24px}p{color:#6b5b73;line-height:1.5}</style></head>'
+        '<body><div class="card"><h1>' + title + '</h1><p>' + message + '</p></div>'
+        + script +
+        '</body></html>'
+    )
+
+
+@app.route("/verify", methods=["GET"])
+def verify():
+    token = request.args.get("token", "").strip()
+    if not token:
+        return Response(
+            _verify_page_html("Invalid link", "No verification token was provided."),
+            mimetype="text/html",
+        )
+
+    try:
+        r = requests.get(
+            APPS_SCRIPT_URL,
+            params={"token": token, "api": "1"},
+            timeout=15,
+            allow_redirects=True,
+        )
+        data = r.json()
+    except Exception as e:
+        log.exception("Verify call to Apps Script failed")
+        return Response(
+            _verify_page_html("Verification error", "We could not reach the verification service. " + str(e)),
+            mimetype="text/html",
+        )
+
+    if data.get("ok"):
+        name = data.get("name", "")
+        greeting = "Thank you" + (", " + name if name else "") + "."
+        if data.get("status") == "already":
+            msg = greeting + " This email has already been verified. Redirecting you to the welcome page..."
+            title = "Already verified"
+        else:
+            msg = greeting + " Your email is verified. Redirecting you to the welcome page..."
+            title = "Verified!"
+        return Response(_verify_page_html(title, msg, REDIRECT_URL), mimetype="text/html")
+
+    err = data.get("error", "Unknown error")
+    return Response(_verify_page_html("Not found", "That verification link is invalid or expired. (" + err + ")"), mimetype="text/html")
 
 
 @app.route("/authorize", methods=["POST"])
