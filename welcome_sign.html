@@ -17,7 +17,11 @@
     --accent-hi: #ffd27a;
     --muted: #b8c6ce;
   }
-  * { box-sizing: border-box; }
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
   body {
     margin: 0;
     font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
@@ -26,6 +30,20 @@
     min-height: 100vh;
     padding: 4vh 5vw;
     -webkit-font-smoothing: antialiased;
+  }
+  @media print {
+    body {
+      background: var(--bg) !important;
+    }
+    .card, .house, .also-check-out {
+      background: var(--panel) !important;
+      break-inside: avoid;
+    }
+    h1 {
+      color: var(--accent) !important;
+      background: none !important;
+      -webkit-text-fill-color: var(--accent) !important;
+    }
   }
   header {
     text-align: center;
@@ -224,7 +242,7 @@
     <div class="house">
       <div><strong>Wi-Fi:</strong> Scan the QR code on the fridge.</div>
       <div><strong>Checkout:</strong> 10:00 AM</div>
-      <div><strong>Contact:</strong> Text Dan at 816-686-5888 for anything urgent.</div>
+      <div><strong>Contact:</strong> Message Dan via the Airbnb app if you need anything.</div>
     </div>
 
   </section>
