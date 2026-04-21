@@ -111,7 +111,15 @@ sudo systemctl enable --now tunnel-url-watcher.timer
 ```
 - Host will now receive an email whenever the tunnel URL changes
 
-### 3.11 Install Tailscale for remote SSH admin access
+### 3.11 Set up log rotation
+```bash
+sudo bash setup_log_rotation.sh
+```
+- Caps systemd journal at 500MB, 30-day retention
+- Installs nginx logrotate (14 days, compressed)
+- Prevents the SD card from filling up over time
+
+### 3.12 Install Tailscale for remote SSH admin access
 Gives you (the system admin) SSH access to this Pi from anywhere via a stable 100.x.y.z IP.
 
 ```bash
