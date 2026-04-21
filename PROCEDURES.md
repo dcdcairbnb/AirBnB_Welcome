@@ -230,7 +230,9 @@ sudo systemctl restart omada-auth
 
 ### 6.3 Weekly maintenance
 - Tunnel URL changes arrive by email automatically. No manual check needed.
+- iCal expiration alerts arrive by email automatically. If you get one, regenerate the iCal URL in the host dashboard and update ICAL_URLS in `/opt/omada-auth/omada_auth.py`.
 - Check Sheet for any weird submissions to clean up
+- Weekly Sheet backup runs Sunday 3am automatically. Spot-check the "* Sheet Backups" folder in Drive monthly.
 
 ### 6.4 Monthly maintenance
 - Review Google Apps Script executions tab for any errors
@@ -266,9 +268,11 @@ sudo systemctl restart omada-auth
 - Check Flask logs for "Ticketmaster fetch failed"
 
 ### Welcome page shows wrong dates
+- Check inbox for automated "iCal fetch failed" email from the Pi - fires within 24h of first failure
 - Check iCal URLs are correct (copy fresh from Airbnb/VRBO - they can expire)
 - Test: `curl http://<pi-ip>/reservation`
 - Check Flask logs for "iCal fetch failed"
+- If an iCal token expired, regenerate in the host dashboard and update ICAL_URLS in `/opt/omada-auth/omada_auth.py`, then `sudo systemctl restart omada-auth`
 
 ### Admin page shows Google Drive error (multi-account)
 - Use the Pi-hosted admin (`<tunnel-url>.trycloudflare.com/admin`), not Apps Script URL
