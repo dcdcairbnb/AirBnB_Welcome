@@ -240,6 +240,12 @@ sudo systemctl restart omada-auth
   ```bash
   ssh pi@<pi-ip> "sudo apt update && sudo apt upgrade -y && sudo reboot"
   ```
+- Run a fresh Pi config backup:
+  ```bash
+  ssh pi@<pi-ip> "sudo bash ~/AirBnB_Welcome/backup_pi_config.sh"
+  scp pi@<pi-ip>:/tmp/pi-config-backup-*.tar.gz ~/Documents/backups/
+  ```
+
 
 ---
 
@@ -358,7 +364,96 @@ After the first property, expect 2 hours on #2 as you refine the templates.
 
 ---
 
-## 10. Cost Per Property (Recurring)
+## 10. Rebuild / Disaster Recovery
+
+When to use: SD card failure, Pi hardware death, corrupted system, moved to new hardware. Rebuild time: ~45 minutes if you have a recent backup tarball.
+
+### 10.1 Prerequisites
+- A backup tarball (from `backup_pi_config.sh`) stored somewhere safe (your PC, cloud drive, or other Pi)
+- Fresh Pi hardware + SD card
+- Access to the customer's network (can be temporary via cellular hotspot)
+
+### 10.2 Taking backups
+
+#### Run a fresh backup anytime
+```bash
+ssh pi@<tailscale-ip>
+sudo bash ~/AirBnB_Welcome/backup_pi_config.sh
+```
+Script prints the filename (e.g., `/tmp/pi-config-backup-2026-04-21.tar.gz`).
+
+#### Pull the backup to your computer
+```bash
+scp pi@<tailscale-ip>:/tmp/pi-config-backup-*.tar.gz ~/Documents/backups/
+```
+
+#### Recommended backup cadence
+- Monthly, plus any time you make significant config changes
+- Keep at least the last 3 backups in a safe place (external drive, cloud, or second Pi)
+
+### 10.3 Rebuilding a dead Pi
+
+#### Step 1: Provision fresh Pi base
+Follow sections 3.1 through 3.3 of this doc:
+- Flash Raspberry Pi OS
+- Install Omada Controller
+- Install nginx + python3-venv + apache2-utils + cloudflared
+
+Stop before the customer-specific steps (3.4 onward). The restore script handles those.
+
+#### Step 2: Copy backup to new Pi
+```bash
+scp ~/Documents/backups/pi-config-backup-2026-04-21.tar.gz pi@<new-pi-ip>:/tmp/
+```
+
+#### Step 3: Copy restore script and run
+```bash
+scp restore_pi_config.sh pi@<new-pi-ip>:/tmp/
+ssh -t pi@<new-pi-ip> "sudo bash /tmp/restore_pi_config.sh /tmp/pi-config-backup-2026-04-21.tar.gz"
+```
+
+This restores:
+- All `/opt/omada-auth` code and state
+- nginx config and admin password
+- All systemd units (omada-auth, cloudflared-tunnel, tunnel-url-watcher)
+- All web files (splash.html, welcome pages, hero image)
+- Omada Controller data directory (portal, SSIDs, walled garden, operator accounts)
+- Pi user crontab (Healthchecks ping)
+
+#### Step 4: Reinstall Tailscale (needs fresh auth)
+```bash
+ssh pi@<new-pi-ip>
+curl -fsSL https://tailscale.com/install.sh | sh
+sudo tailscale up
+# Open the printed URL in your Tailscale admin account to approve
+```
+Note: the Tailscale IP will change on the new Pi. Update URLS.md.
+
+#### Step 5: Verify everything
+```bash
+sudo systemctl is-active nginx omada-auth cloudflared-tunnel tunnel-url-watcher.timer tpeap tailscaled
+curl -s http://127.0.0.1/reservation
+curl -s http://127.0.0.1/events | head -5
+```
+All services should be `active` and endpoints should return data.
+
+#### Step 6: Note new tunnel URL
+You'll receive an auto-email with the new Cloudflare Tunnel URL. Save to URLS.md.
+
+### 10.4 What isn't in the backup (needs manual reconfig)
+- Tailscale auth (must re-auth on new Pi)
+- Healthchecks.io ping URL (already in crontab, restored automatically)
+- New Cloudflare Tunnel URL (random, auto-emailed when tunnel connects)
+
+### 10.5 Partial restores
+If only the code broke (not hardware), you don't need a full rebuild. Just:
+```bash
+git clone https://github.com/dcdcairbnb/AirBnB_Welcome.git
+sudo cp AirBnB_Welcome/omada_auth.py /opt/omada-auth/
+sudo systemctl restart omada-auth
+```
+
+## 11. Cost Per Property (Recurring)
 - Pi hardware: ~$150 (one-time)
 - EAP hardware: ~$100 (one-time)
 - Domain for Cloudflare Tunnel: $10/year (optional, shared across properties)
