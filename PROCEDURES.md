@@ -166,6 +166,19 @@ sudo systemctl restart omada-auth
 
 ## 5. One-Time Omada Setup (per property)
 
+### Fast path: API automation
+```bash
+python setup_omada.py <customer_config.json> YOUR_OMADA_ADMIN_USER YOUR_OMADA_ADMIN_PASS
+```
+Creates operator account, WLAN, portal, and walled garden automatically.
+
+You'll still need to:
+- Add Apple TV MACs to Authentication-Free Client list (UI)
+- Plug in and adopt the EAP (physical + UI)
+- Update `omada_auth.py` env vars with the operator credentials
+
+### Slow path: manual UI
+
 ### 5.1 Adopt the EAP
 1. Plug EAP into router LAN port with PoE+ or DC power
 2. Wait 90 seconds
