@@ -100,6 +100,17 @@ sudo bash setup_remote_admin.sh dan <strong-password>
 ```
 - Record the printed Cloudflare Tunnel URL
 
+### 3.10 Install tunnel URL auto-email watcher
+```bash
+sudo cp email_tunnel_url.sh /opt/omada-auth/email_tunnel_url.sh
+sudo chmod +x /opt/omada-auth/email_tunnel_url.sh
+sudo cp tunnel-url-watcher.service /etc/systemd/system/
+sudo cp tunnel-url-watcher.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now tunnel-url-watcher.timer
+```
+- Host will now receive an email whenever the tunnel URL changes
+
 ---
 
 ## 4. One-Time Google Setup (per property)
@@ -195,11 +206,7 @@ sudo systemctl restart omada-auth
 - Internet granted
 
 ### 6.3 Weekly maintenance
-- Check Cloudflare Tunnel URL is still current. If Pi has rebooted, grab new URL:
-  ```bash
-  ssh pi@<pi-ip> "sudo journalctl -u cloudflared-tunnel | grep trycloudflare.com | tail -1"
-  ```
-  Update URLS.md / phone bookmark
+- Tunnel URL changes arrive by email automatically. No manual check needed.
 - Check Sheet for any weird submissions to clean up
 
 ### 6.4 Monthly maintenance
@@ -244,9 +251,10 @@ sudo systemctl restart omada-auth
 - Use the Pi-hosted admin (`<tunnel-url>.trycloudflare.com/admin`), not Apps Script URL
 
 ### Remote admin URL doesn't work
-- Pi might have rebooted and tunnel URL changed
-- SSH to Pi: `sudo journalctl -u cloudflared-tunnel | grep trycloudflare.com | tail -1`
-- Update phone bookmark
+- Pi might have rebooted. You should have received an email with the new URL.
+- Search email inbox for "admin tunnel URL changed"
+- If no email arrived, force a check: `ssh pi@<pi-ip> "sudo systemctl start tunnel-url-watcher"`
+- Or fall back to manual: `sudo journalctl -u cloudflared-tunnel | grep trycloudflare.com | tail -1`
 
 ### "Sorry, unable to open the file at this time" in browser
 - Multi-account Google issue. Open the URL in incognito mode.
@@ -261,7 +269,8 @@ sudo systemctl restart omada-auth
 | nginx | 80 | Serves splash/welcome pages, proxies /admin /authorize /verify /events /reservation |
 | omada-auth (Flask) | 5000 | Omada auth callback, email verification, events, reservation, admin |
 | tpeap (Omada Controller) | 8088, 8043 | Manages EAP and captive portal |
-| cloudflared | - | Cloudflare Tunnel for remote admin |
+| cloudflared-tunnel | - | Cloudflare Tunnel for remote admin |
+| tunnel-url-watcher.timer | - | Emails host when tunnel URL changes (runs every 10 min) |
 
 ### Data flow on form submit
 1. Guest connects to SSID → Omada captures, redirects to `splash.html`
