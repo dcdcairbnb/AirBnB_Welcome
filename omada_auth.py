@@ -233,6 +233,7 @@ def reservation():
 
     events = []
     errors = []
+    alert_file_dir = "/opt/omada-auth"
     for url in ICAL_URLS:
         if "airbnb.com" in url.lower():
             source = "Airbnb"
@@ -240,14 +241,42 @@ def reservation():
             source = "VRBO"
         else:
             source = "Other"
+        alert_key = source.lower()
+        alert_file = os.path.join(alert_file_dir, "ical_alert_" + alert_key + ".txt")
         try:
             r = requests.get(url, timeout=10)
             r.raise_for_status()
             for s, e in _parse_ical_dates(r.text):
                 events.append((s, e, source))
-        except Exception as e:
-            log.warning("iCal fetch failed for %s: %s", url, e)
-            errors.append(str(e))
+            # Fetch succeeded. Clear any previous alert marker.
+            if os.path.exists(alert_file):
+                try:
+                    os.remove(alert_file)
+                except Exception:
+                    pass
+        except Exception as exc:
+            log.warning("iCal fetch failed for %s: %s", url, exc)
+            errors.append(source + ": " + str(exc))
+            # Send alert email, but at most once per 24h per source
+            last_alerted = 0
+            if os.path.exists(alert_file):
+                try:
+                    last_alerted = float(open(alert_file).read().strip())
+                except Exception:
+                    pass
+            if (now - last_alerted) > 86400:
+                try:
+                    requests.post(
+                        APPS_SCRIPT_URL,
+                        params={"admin": "icalalert"},
+                        json={"source": source, "url": url, "error": str(exc)},
+                        timeout=8,
+                        allow_redirects=True,
+                    )
+                    with open(alert_file, "w") as f:
+                        f.write(str(now))
+                except Exception as ae:
+                    log.warning("iCal alert email failed: %s", ae)
 
     if not events and errors:
         return jsonify({"ok": False, "error": "; ".join(errors)}), 500
