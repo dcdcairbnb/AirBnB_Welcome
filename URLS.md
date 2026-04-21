@@ -44,7 +44,8 @@ sudo journalctl -u cloudflared-tunnel --no-pager | grep trycloudflare.com | tail
 
 | What | Command |
 |------|---------|
-| SSH to Pi | `ssh pi@192.168.0.217` |
+| SSH to Pi (local network) | `ssh pi@192.168.0.217` |
+| SSH to Pi (from anywhere, via Tailscale) | `ssh pi@100.76.203.111` |
 
 ## Guest WiFi
 

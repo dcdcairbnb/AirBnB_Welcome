@@ -111,6 +111,20 @@ sudo systemctl enable --now tunnel-url-watcher.timer
 ```
 - Host will now receive an email whenever the tunnel URL changes
 
+### 3.11 Install Tailscale for remote SSH admin access
+Gives you (the system admin) SSH access to this Pi from anywhere via a stable 100.x.y.z IP.
+
+```bash
+curl -fsSL https://tailscale.com/install.sh | sh
+sudo tailscale up
+```
+- The command prints a login URL. Open it in your browser signed in as **your** Tailscale admin account (not the customer's).
+- Approve the device.
+- Run `tailscale ip -4` to get the Pi's permanent Tailscale IP.
+- Save this IP alongside the customer's other info. Format: `ssh pi@100.x.y.z`.
+
+**Important**: The customer does NOT need Tailscale on their devices. This is for your remote support only.
+
 ---
 
 ## 4. One-Time Google Setup (per property)
@@ -269,8 +283,9 @@ sudo systemctl restart omada-auth
 | nginx | 80 | Serves splash/welcome pages, proxies /admin /authorize /verify /events /reservation |
 | omada-auth (Flask) | 5000 | Omada auth callback, email verification, events, reservation, admin |
 | tpeap (Omada Controller) | 8088, 8043 | Manages EAP and captive portal |
-| cloudflared-tunnel | - | Cloudflare Tunnel for remote admin |
+| cloudflared-tunnel | - | Cloudflare Tunnel for remote admin (host-to-customer) |
 | tunnel-url-watcher.timer | - | Emails host when tunnel URL changes (runs every 10 min) |
+| tailscaled | - | Tailscale VPN for remote SSH access (admin-to-Pi) |
 
 ### Data flow on form submit
 1. Guest connects to SSID → Omada captures, redirects to `splash.html`
@@ -322,6 +337,7 @@ Copy this checklist for each new customer:
 - Apps Script + Google Sheet setup: 20 min
 - Omada portal + walled garden config: 20 min
 - EAP adoption + SSID creation: 10 min
+- Tailscale install (for your remote admin access): 5 min
 - Testing + fixes: 30 min
 - **Total: ~3 hours per property**
 
