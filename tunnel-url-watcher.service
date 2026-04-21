@@ -1,0 +1,8 @@
+[Unit]
+Description=Email tunnel URL when it changes
+After=cloudflared-tunnel.service
+Wants=cloudflared-tunnel.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/omada-auth/email_tunnel_url.sh

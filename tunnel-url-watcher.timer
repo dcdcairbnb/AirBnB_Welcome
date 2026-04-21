@@ -1,0 +1,13 @@
+[Unit]
+Description=Check tunnel URL every 10 minutes
+Requires=tunnel-url-watcher.service
+
+[Timer]
+# First run 1 minute after boot so cloudflared has time to connect
+OnBootSec=1min
+# Then every 10 minutes
+OnUnitActiveSec=10min
+Unit=tunnel-url-watcher.service
+
+[Install]
+WantedBy=timers.target
