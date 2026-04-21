@@ -279,8 +279,8 @@
 <body>
   <header>
     <h1>Welcome.</h1>
-    <p class="sub">You are home through Wednesday, April 22.</p>
-    <p class="dates">Germantown, Nashville</p>
+    <p class="sub" id="stayLine">Welcome home.</p>
+    <p class="dates">Nashville</p>
   </header>
 
   <section>
@@ -634,6 +634,21 @@
     var hh = ((h + 11) % 12) + 1;
     return hh + ':' + m + ' ' + ampm;
   }
+  fetch('/reservation').then(function (r) { return r.json(); }).then(function (data) {
+    if (!data || !data.ok) return;
+    var h1 = document.querySelector('header h1');
+    if (h1 && data.guest_name) {
+      h1.textContent = 'Welcome, ' + data.guest_name;
+    }
+    var el = document.getElementById('stayLine');
+    if (!el) return;
+    if (data.status === 'current' && data.checkout_label) {
+      el.innerHTML = 'You are home through <strong>' + data.checkout_label + '</strong>.';
+    } else if (data.status === 'upcoming' && data.checkin_label) {
+      el.innerHTML = 'Next guest checks in <strong>' + data.checkin_label + '</strong>.';
+    }
+  }).catch(function () {});
+
   fetch('/events').then(function (r) {
     return r.json();
   }).then(function (data) {

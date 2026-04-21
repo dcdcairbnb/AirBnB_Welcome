@@ -96,6 +96,105 @@ def health():
     return jsonify({"ok": True, "service": "omada_auth"})
 
 
+def _admin_html(current_guest, checkin_label, checkout_label, source='', saved=False):
+    notice = '<p class="saved">Saved.</p>' if saved else ''
+    res_panel = ''
+    if checkin_label and checkout_label:
+        source_line = ''
+        if source:
+            source_line = '<p class="range"><strong>Source:</strong> ' + source + '</p>'
+        res_panel = (
+            '<div class="res">'
+            '<p class="label">Current reservation</p>'
+            + source_line +
+            '<p class="range"><strong>Check-in:</strong> ' + checkin_label + '</p>'
+            '<p class="range"><strong>Check-out:</strong> ' + checkout_label + '</p>'
+            '</div>'
+        )
+    else:
+        res_panel = '<div class="res"><p class="label">No active reservation.</p></div>'
+
+    escaped = (current_guest or '').replace('"', '&quot;')
+    return (
+        '<!doctype html><html><head><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        '<title>Guest Name Admin</title>'
+        '<style>body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;'
+        'background:linear-gradient(160deg,#2B1055 0%,#7597DE 30%,#FF5E62 65%,#FFB86C 100%);'
+        'min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;margin:0;color:#2d1b3d}'
+        '.card{background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3);'
+        'padding:36px 28px;max-width:440px;width:100%}'
+        'h1{margin:0 0 6px 0;font-size:22px}p.sub{color:#6b5b73;margin:0 0 20px 0;font-size:14px}'
+        'label{display:block;font-weight:600;margin-bottom:6px;font-size:14px}'
+        'input{width:100%;padding:12px 14px;border:2px solid #e5e0e8;border-radius:8px;font-size:16px;box-sizing:border-box}'
+        'input:focus{outline:none;border-color:#FF5E62}'
+        'button{width:100%;padding:14px;margin-top:14px;background:linear-gradient(135deg,#FF5E62 0%,#FF9966 100%);'
+        'color:#fff;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer}'
+        '.saved{color:#0d7a3e;font-weight:600;margin:14px 0 0 0}'
+        '.current{color:#6b5b73;margin:0 0 16px 0;font-size:13px}'
+        '.current strong{color:#2d1b3d}'
+        '.res{background:#f6f2fa;border-radius:10px;padding:14px 16px;margin:0 0 18px 0}'
+        '.res .label{color:#6b5b73;text-transform:uppercase;letter-spacing:0.15em;font-size:11px;font-weight:700;margin:0 0 8px 0}'
+        '.res .range{margin:0 0 4px 0;font-size:14px;color:#2d1b3d}'
+        '</style></head>'
+        '<body><div class="card">'
+        '<h1>Set current guest</h1>'
+        '<p class="sub">Shown on the TV and welcome pages as "Welcome, [name]".</p>'
+        + res_panel +
+        '<p class="current">Currently: <strong>' + (escaped or 'not set') + '</strong></p>'
+        '<form method="post" action="/admin">'
+        '<label for="guestName">Guest first name (leave blank to clear)</label>'
+        '<input type="text" id="guestName" name="guestName" value="' + escaped + '" autofocus>'
+        '<button type="submit">Save</button>'
+        '</form>' + notice +
+        '</div></body></html>'
+    )
+
+
+def _fetch_guest_name():
+    try:
+        r = requests.get(APPS_SCRIPT_URL, params={"api": "guest"}, timeout=8, allow_redirects=True)
+        data = r.json()
+        return data.get("name", "") if data.get("ok") else ""
+    except Exception:
+        return ""
+
+
+def _fetch_reservation_labels():
+    """Call /reservation locally to get fresh date labels and source."""
+    try:
+        r = requests.get("http://127.0.0.1:5000/reservation", timeout=15)
+        data = r.json()
+        return data.get("checkin_label", ""), data.get("checkout_label", ""), data.get("source", "")
+    except Exception as e:
+        log.warning("Local /reservation fetch failed: %s", e)
+        return "", "", ""
+
+
+@app.route("/admin", methods=["GET"])
+def admin_get():
+    guest = _fetch_guest_name()
+    ci, co, src = _fetch_reservation_labels()
+    return Response(_admin_html(guest, ci, co, src, saved=False), mimetype="text/html")
+
+
+@app.route("/admin", methods=["POST"])
+def admin_post():
+    guest_name = (request.form.get("guestName") or "").strip()
+    try:
+        requests.post(
+            APPS_SCRIPT_URL,
+            params={"admin": "1"},
+            data={"guestName": guest_name},
+            timeout=10,
+            allow_redirects=True,
+        )
+    except Exception as e:
+        log.warning("Admin save push to Apps Script failed: %s", e)
+    ci, co, src = _fetch_reservation_labels()
+    return Response(_admin_html(guest_name, ci, co, src, saved=True), mimetype="text/html")
+
+
 _events_cache = {"data": None, "fetched_at": 0}
 _reservation_cache = {"data": None, "fetched_at": 0}
 
@@ -135,10 +234,17 @@ def reservation():
     events = []
     errors = []
     for url in ICAL_URLS:
+        if "airbnb.com" in url.lower():
+            source = "Airbnb"
+        elif "vrbo.com" in url.lower() or "homeaway" in url.lower():
+            source = "VRBO"
+        else:
+            source = "Other"
         try:
             r = requests.get(url, timeout=10)
             r.raise_for_status()
-            events.extend(_parse_ical_dates(r.text))
+            for s, e in _parse_ical_dates(r.text):
+                events.append((s, e, source))
         except Exception as e:
             log.warning("iCal fetch failed for %s: %s", url, e)
             errors.append(str(e))
@@ -149,27 +255,30 @@ def reservation():
     today = _dt.date.today()
     current = None
     upcoming = None
-    for s, e in sorted(events, key=lambda x: x[0]):
+    for s, e, src in sorted(events, key=lambda x: x[0]):
         if s <= today < e:
-            current = (s, e)
+            current = (s, e, src)
             break
         if s > today and (upcoming is None or s < upcoming[0]):
-            upcoming = (s, e)
+            upcoming = (s, e, src)
 
     if current:
-        s, e = current
+        s, e, src = current
         result = {
             "ok": True,
             "status": "current",
+            "source": src,
             "checkin": s.isoformat(),
             "checkout": e.isoformat(),
+            "checkin_label": s.strftime("%A, %B ") + str(s.day),
             "checkout_label": e.strftime("%A, %B ") + str(e.day),
         }
     elif upcoming:
-        s, e = upcoming
+        s, e, src = upcoming
         result = {
             "ok": True,
             "status": "upcoming",
+            "source": src,
             "checkin": s.isoformat(),
             "checkout": e.isoformat(),
             "checkin_label": s.strftime("%A, %B ") + str(s.day),
@@ -177,6 +286,33 @@ def reservation():
         }
     else:
         result = {"ok": True, "status": "none"}
+
+    # Pull current guest name from Apps Script (manually set via admin page)
+    try:
+        gr = requests.get(APPS_SCRIPT_URL, params={"api": "guest"}, timeout=8, allow_redirects=True)
+        gdata = gr.json()
+        if gdata.get("ok") and gdata.get("name"):
+            result["guest_name"] = gdata["name"]
+    except Exception as e:
+        log.warning("Guest name fetch failed: %s", e)
+
+    # Push the reservation back to Apps Script so the admin page can show dates
+    try:
+        requests.post(
+            APPS_SCRIPT_URL,
+            params={"admin": "reservation"},
+            json={
+                "status": result.get("status", ""),
+                "checkin": result.get("checkin", ""),
+                "checkout": result.get("checkout", ""),
+                "checkin_label": result.get("checkin_label", ""),
+                "checkout_label": result.get("checkout_label", ""),
+            },
+            timeout=8,
+            allow_redirects=True,
+        )
+    except Exception as e:
+        log.warning("Reservation push to Apps Script failed: %s", e)
 
     _reservation_cache["data"] = result
     _reservation_cache["fetched_at"] = now

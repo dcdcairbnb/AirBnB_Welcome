@@ -346,6 +346,10 @@
   }
   fetch('/reservation').then(function (r) { return r.json(); }).then(function (data) {
     if (!data || !data.ok) return;
+    var h1 = document.querySelector('header h1');
+    if (h1 && data.guest_name) {
+      h1.textContent = 'Welcome, ' + data.guest_name;
+    }
     var el = document.getElementById('stayLine');
     if (!el) return;
     if (data.status === 'current' && data.checkout_label) {
