@@ -415,6 +415,35 @@ You're done. Total time: ~2 hours for this customer.
     with open(out / "NEXT_STEPS.md", "w", encoding="utf-8") as f:
         f.write(next_steps)
 
+    # Generate a customized customer handover doc
+    handover_src = REPO_ROOT / "CUSTOMER_HANDOVER_TEMPLATE.md"
+    if handover_src.exists():
+        with open(handover_src, "r", encoding="utf-8") as f:
+            handover = f.read()
+        sheet_url = f"https://docs.google.com/spreadsheets/d/{cfg['sheet_id']}/edit"
+        handover_subs = {
+            "{PROPERTY_NAME}": cfg["property_name"],
+            "{PI_IP}": cfg["pi_ip"],
+            "{WIFI_SSID}": cfg["wifi_ssid"],
+            "{WIFI_PASSWORD}": cfg["wifi_password"],
+            "{ADMIN_USER}": cfg["admin_username"],
+            "{ADMIN_PASSWORD}": cfg["admin_password"],
+            "{HOST_EMAIL}": cfg["host_email"],
+            "{SHEET_URL}": sheet_url,
+            "{TUNNEL_URL}": "[fill in after tunnel comes up - see first auto-email]",
+            "{OMADA_ADMIN}": "[your Omada Controller admin username]",
+            "{OMADA_PASSWORD}": "[your Omada Controller admin password - store in password manager]",
+            "{YOUR_EMAIL}": "[your support email]",
+            "{YOUR_PHONE}": "[your support phone]",
+            "{YOUR_NAME}": "[your name]",
+            "{INSTALL_DATE}": "[install date]",
+            "{SERVICE_TERMS_HERE}": "[your service terms - pricing, SLA, what's included]",
+        }
+        for k, v in handover_subs.items():
+            handover = handover.replace(k, v)
+        with open(out / "CUSTOMER_HANDOVER.md", "w", encoding="utf-8") as f:
+            f.write(handover)
+
     return out
 
 
