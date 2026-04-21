@@ -287,6 +287,35 @@ def reservation():
     else:
         result = {"ok": True, "status": "none"}
 
+    # Auto-clear guest name when a new reservation rolls in
+    checkin_current = result.get("checkin", "")
+    checkin_file = "/opt/omada-auth/last_checkin.txt"
+    last_checkin = ""
+    try:
+        if os.path.exists(checkin_file):
+            with open(checkin_file, "r") as f:
+                last_checkin = f.read().strip()
+    except Exception:
+        pass
+
+    if checkin_current and checkin_current != last_checkin:
+        try:
+            requests.post(
+                APPS_SCRIPT_URL,
+                params={"admin": "1"},
+                data={"guestName": ""},
+                timeout=8,
+                allow_redirects=True,
+            )
+            log.info("Reservation rolled over (%s -> %s), cleared guest name", last_checkin, checkin_current)
+        except Exception as e:
+            log.warning("Auto-clear guest name failed: %s", e)
+        try:
+            with open(checkin_file, "w") as f:
+                f.write(checkin_current)
+        except Exception as e:
+            log.warning("Could not write last_checkin.txt: %s", e)
+
     # Pull current guest name from Apps Script (manually set via admin page)
     try:
         gr = requests.get(APPS_SCRIPT_URL, params={"api": "guest"}, timeout=8, allow_redirects=True)
