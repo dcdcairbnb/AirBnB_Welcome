@@ -155,6 +155,7 @@ sudo tailscale up
 8. Copy the web app URL
 9. Update `omada_auth.py` APPS_SCRIPT_URL on the Pi with this URL
 10. Run `setupCheckinReminderTrigger` function once from the editor to install the daily 10am email
+11. Run `setupWeeklyBackupTrigger` function once to install Sunday 3am weekly Sheet backup (grant Drive permission when prompted)
 
 ### 4.3 Redeploy Pi with updated URL
 ```bash
