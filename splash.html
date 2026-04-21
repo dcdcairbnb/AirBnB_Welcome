@@ -126,6 +126,14 @@
     transform: translateY(0);
   }
 
+  .privacy {
+    margin: 16px 0 0 0;
+    font-size: 11px;
+    color: #8a7f90;
+    line-height: 1.4;
+    text-align: center;
+  }
+
   .success {
     display: none;
     text-align: center;
@@ -184,6 +192,7 @@
         </div>
 
         <button type="submit">Connect to WiFi</button>
+        <p class="privacy">We collect your name and email to provide WiFi access and send your verification. We don't share with third parties.</p>
       </form>
     </div>
 
@@ -207,6 +216,17 @@
   const successView = document.getElementById('successView');
 
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxYneJMWNnhuVd135ICINzIni3DB-EcFVx-r34JpH1IS6Mvjkga7I0tNpa7BXPhT-kIcw/exec';
+  const AUTHORIZE_URL = '/authorize';
+
+  // Omada appends client context as query params when it redirects the guest here
+  const qs = new URLSearchParams(window.location.search);
+  const omadaInfo = {
+    clientMac: qs.get('clientMac') || '',
+    apMac: qs.get('apMac') || '',
+    ssidName: qs.get('ssidName') || '',
+    radioId: qs.get('radioId') || '1',
+    site: qs.get('site') || ''
+  };
 
   function validateEmail(value) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -241,6 +261,7 @@
       stay: stayField.value
     };
 
+    // Log to Google Sheet and send verification email (fire and forget)
     fetch(SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
@@ -251,9 +272,22 @@
     formView.style.display = 'none';
     successView.classList.add('show');
 
-    setTimeout(function () {
-      window.location.href = 'http://192.168.0.217/welcome_sign.html';
-    }, 3000);
+    // Authorize the guest with Omada if we have client context, then redirect
+    if (omadaInfo.clientMac && omadaInfo.apMac && omadaInfo.ssidName && omadaInfo.site) {
+      fetch(AUTHORIZE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(omadaInfo)
+      }).catch(function () {}).finally(function () {
+        setTimeout(function () {
+          window.location.href = 'http://192.168.0.217/welcome_sign.html';
+        }, 2000);
+      });
+    } else {
+      setTimeout(function () {
+        window.location.href = 'http://192.168.0.217/welcome_sign.html';
+      }, 3000);
+    }
   });
 </script>
 </body>
