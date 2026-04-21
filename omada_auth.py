@@ -11,6 +11,7 @@ Flow:
 
 import os
 import json
+import time
 import logging
 from flask import Flask, request, jsonify, Response
 import requests
@@ -31,6 +32,16 @@ APPS_SCRIPT_URL = os.environ.get(
 )
 REDIRECT_URL = os.environ.get("REDIRECT_URL", "http://192.168.0.217/welcome_sign.html")
 REDIRECT_SECONDS = int(os.environ.get("REDIRECT_SECONDS", "3"))
+TM_API_KEY = os.environ.get("TICKETMASTER_KEY", "rAkV87yVeExNjYMqmRPpSppvLcXNWzdG")
+TM_CITY = os.environ.get("TM_CITY", "Nashville")
+TM_STATE = os.environ.get("TM_STATE", "TN")
+EVENTS_CACHE_TTL = int(os.environ.get("EVENTS_CACHE_TTL", "3600"))  # 1 hour
+ICAL_URLS = [u.strip() for u in os.environ.get(
+    "ICAL_URLS",
+    "https://www.airbnb.com/calendar/ical/1546687115825271453.ics?t=1fe96e5261b045f29205ffe550274e08,"
+    "https://www.vrbo.com/icalendar/da573616bb5a4f2288f4cabcc1dc9bb4.ics?nonTentative",
+).split(",") if u.strip()]
+RESERVATION_CACHE_TTL = int(os.environ.get("RESERVATION_CACHE_TTL", "1800"))  # 30 min
 # --------------------------------------------------------------------
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -83,6 +94,142 @@ def authorize_guest(session, cid, token, payload):
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"ok": True, "service": "omada_auth"})
+
+
+_events_cache = {"data": None, "fetched_at": 0}
+_reservation_cache = {"data": None, "fetched_at": 0}
+
+
+def _parse_ical_dates(text):
+    """Lightweight iCal parser. Returns list of (start_date, end_date) tuples."""
+    import datetime as _dt
+    events = []
+    in_event = False
+    start = end = None
+    for raw in text.splitlines():
+        line = raw.strip()
+        if line == "BEGIN:VEVENT":
+            in_event = True
+            start = end = None
+        elif line == "END:VEVENT":
+            if in_event and start and end:
+                events.append((start, end))
+            in_event = False
+        elif in_event:
+            if line.startswith("DTSTART"):
+                value = line.split(":", 1)[-1].strip()
+                start = _dt.date(int(value[0:4]), int(value[4:6]), int(value[6:8]))
+            elif line.startswith("DTEND"):
+                value = line.split(":", 1)[-1].strip()
+                end = _dt.date(int(value[0:4]), int(value[4:6]), int(value[6:8]))
+    return events
+
+
+@app.route("/reservation", methods=["GET"])
+def reservation():
+    import datetime as _dt
+    now = time.time()
+    if _reservation_cache["data"] and (now - _reservation_cache["fetched_at"]) < RESERVATION_CACHE_TTL:
+        return jsonify(_reservation_cache["data"])
+
+    events = []
+    errors = []
+    for url in ICAL_URLS:
+        try:
+            r = requests.get(url, timeout=10)
+            r.raise_for_status()
+            events.extend(_parse_ical_dates(r.text))
+        except Exception as e:
+            log.warning("iCal fetch failed for %s: %s", url, e)
+            errors.append(str(e))
+
+    if not events and errors:
+        return jsonify({"ok": False, "error": "; ".join(errors)}), 500
+
+    today = _dt.date.today()
+    current = None
+    upcoming = None
+    for s, e in sorted(events, key=lambda x: x[0]):
+        if s <= today < e:
+            current = (s, e)
+            break
+        if s > today and (upcoming is None or s < upcoming[0]):
+            upcoming = (s, e)
+
+    if current:
+        s, e = current
+        result = {
+            "ok": True,
+            "status": "current",
+            "checkin": s.isoformat(),
+            "checkout": e.isoformat(),
+            "checkout_label": e.strftime("%A, %B ") + str(e.day),
+        }
+    elif upcoming:
+        s, e = upcoming
+        result = {
+            "ok": True,
+            "status": "upcoming",
+            "checkin": s.isoformat(),
+            "checkout": e.isoformat(),
+            "checkin_label": s.strftime("%A, %B ") + str(s.day),
+            "checkout_label": e.strftime("%A, %B ") + str(e.day),
+        }
+    else:
+        result = {"ok": True, "status": "none"}
+
+    _reservation_cache["data"] = result
+    _reservation_cache["fetched_at"] = now
+    return jsonify(result)
+
+
+@app.route("/events", methods=["GET"])
+def events():
+    now = time.time()
+    if _events_cache["data"] and (now - _events_cache["fetched_at"]) < EVENTS_CACHE_TTL:
+        return jsonify(_events_cache["data"])
+
+    try:
+        start_iso = time.strftime("%Y-%m-%dT00:00:00Z", time.gmtime(now))
+        r = requests.get(
+            "https://app.ticketmaster.com/discovery/v2/events.json",
+            params={
+                "apikey": TM_API_KEY,
+                "city": TM_CITY,
+                "stateCode": TM_STATE,
+                "size": 30,
+                "sort": "date,asc",
+                "startDateTime": start_iso,
+            },
+            timeout=10,
+        )
+        r.raise_for_status()
+        data = r.json()
+        out = []
+        for ev in data.get("_embedded", {}).get("events", []):
+            start = ev.get("dates", {}).get("start", {}) or {}
+            venues = ev.get("_embedded", {}).get("venues", []) or []
+            venue_name = venues[0].get("name", "") if venues else ""
+            classifications = ev.get("classifications", []) or []
+            segment = ""
+            if classifications:
+                seg = classifications[0].get("segment") or {}
+                segment = seg.get("name", "")
+            out.append({
+                "name": ev.get("name", ""),
+                "url": ev.get("url", ""),
+                "date": start.get("localDate", ""),
+                "time": start.get("localTime", ""),
+                "venue": venue_name,
+                "segment": segment,
+            })
+        result = {"ok": True, "events": out, "count": len(out), "cached_at": int(now)}
+        _events_cache["data"] = result
+        _events_cache["fetched_at"] = now
+        return jsonify(result)
+    except Exception as e:
+        log.exception("Ticketmaster fetch failed")
+        return jsonify({"ok": False, "error": str(e)}), 500
 
 
 def _verify_page_html(title, message, redirect_url=None):

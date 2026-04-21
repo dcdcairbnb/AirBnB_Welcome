@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="refresh" content="900">
+<title>Music City Retreat - TV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a1a24;
+    --panel: #143042;
+    --panel-hi: #1a3c52;
+    --ink: #fbf6ea;
+    --accent: #f4b752;
+    --accent-hi: #ffd27a;
+    --muted: #b8c6ce;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    background: radial-gradient(ellipse at top, #153042 0%, var(--bg) 55%);
+    color: var(--ink);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: 2.5vh 3vw;
+    gap: 1.8vh;
+  }
+  header {
+    text-align: center;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 6vw;
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    background: linear-gradient(180deg, #ffe3a8 0%, #f4b752 55%, #d48a1f 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 0.6vh;
+  }
+  .stay {
+    font-size: 1.8vw;
+    color: var(--ink);
+    font-weight: 600;
+    margin-top: 0.4vh;
+    margin-bottom: 0.4vh;
+  }
+  .stay strong {
+    color: var(--accent-hi);
+    font-weight: 700;
+  }
+  .lead {
+    font-size: 1.2vw;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.35em;
+    font-weight: 600;
+  }
+  main {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2vw;
+    min-height: 0;
+  }
+  .panel {
+    background: linear-gradient(145deg, var(--panel-hi) 0%, var(--panel) 100%);
+    border-radius: 14px;
+    padding: 2vh 1.5vw;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    border-left: 4px solid var(--accent);
+    overflow: hidden;
+  }
+  .panel h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.6vw;
+    font-weight: 900;
+    font-style: italic;
+    color: var(--accent-hi);
+    margin-bottom: 1.5vh;
+    letter-spacing: -0.02em;
+  }
+  .left-col {
+    display: grid;
+    grid-template-rows: 3fr 2fr;
+    gap: 2vh;
+    min-height: 0;
+  }
+  .right-col {
+    display: grid;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 1.5vh;
+    min-height: 0;
+  }
+  .events {
+    min-height: 0;
+    overflow: hidden;
+  }
+  .events-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1vh 1.5vw;
+    overflow: hidden;
+  }
+  .event {
+    padding: 1vh 1vw;
+    border-left: 3px solid var(--accent);
+    background: rgba(0,0,0,0.18);
+    border-radius: 6px;
+  }
+  .event-date {
+    color: var(--accent-hi);
+    font-size: 0.85vw;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    margin-bottom: 0.4vh;
+  }
+  .event-name {
+    font-size: 1.1vw;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.2;
+    margin-bottom: 0.3vh;
+  }
+  .event-venue {
+    font-size: 0.85vw;
+    color: var(--muted);
+  }
+  .restaurants {
+    min-height: 0;
+  }
+  .rest-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5vw;
+  }
+  .rest {
+    padding: 1.2vh 1vw;
+    background: rgba(0,0,0,0.18);
+    border-radius: 8px;
+    border-left: 3px solid var(--accent);
+  }
+  .rest h3 {
+    font-size: 1.2vw;
+    font-weight: 800;
+    color: var(--accent-hi);
+    margin-bottom: 0.3vh;
+  }
+  .rest .blurb {
+    font-size: 0.85vw;
+    color: var(--ink);
+    line-height: 1.3;
+    margin-bottom: 0.3vh;
+  }
+  .rest .dist {
+    font-size: 0.75vw;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 700;
+  }
+  .qr-panel {
+    text-align: center;
+    padding: 1.5vh 1vw;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .qr-panel .label {
+    text-transform: uppercase;
+    font-size: 0.75vw;
+    letter-spacing: 0.25em;
+    color: var(--accent-hi);
+    font-weight: 700;
+    margin-bottom: 0.6vh;
+  }
+  .qr-panel h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4vw;
+    font-weight: 900;
+    margin-bottom: 1vh;
+    color: var(--ink);
+  }
+  .qr-img {
+    background: #fff;
+    padding: 8px;
+    border-radius: 8px;
+    display: inline-block;
+    margin-bottom: 0.6vh;
+    line-height: 0;
+  }
+  .qr-img img {
+    display: block;
+    width: 9vw;
+    height: 9vw;
+    max-width: 140px;
+    max-height: 140px;
+  }
+  .qr-caption {
+    font-size: 0.8vw;
+    color: var(--muted);
+    line-height: 1.3;
+  }
+  .silverthorne {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1vw;
+    align-items: center;
+    padding: 1.2vh 1vw;
+    min-height: 0;
+  }
+  .silverthorne .copy h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2vw;
+    font-weight: 900;
+    margin-bottom: 0.3vh;
+    color: var(--ink);
+  }
+  .silverthorne .copy p {
+    font-size: 0.75vw;
+    color: var(--muted);
+    line-height: 1.3;
+  }
+  .silverthorne .lead-sm {
+    font-size: 0.6vw;
+    color: var(--accent-hi);
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    font-weight: 700;
+    margin-bottom: 0.4vh;
+  }
+  .silverthorne .qr-sm {
+    background: #fff;
+    padding: 6px;
+    border-radius: 6px;
+    line-height: 0;
+  }
+  .silverthorne .qr-sm img {
+    display: block;
+    width: 8vw;
+    height: 8vw;
+    max-width: 120px;
+    max-height: 120px;
+  }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85vw;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+  }
+  footer strong {
+    color: var(--accent-hi);
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Welcome To Music City Retreat</h1>
+    <p class="stay" id="stayLine">Welcome home.</p>
+    <p class="lead">Nashville</p>
+  </header>
+
+  <main>
+    <div class="left-col">
+      <section class="panel events">
+        <h2>Tonight and This Week</h2>
+        <ul class="events-list" id="eventsList">
+          <li class="event"><div class="event-date">Loading</div><div class="event-name">Fetching events...</div></li>
+        </ul>
+      </section>
+
+      <section class="panel restaurants">
+        <h2>Eat Nearby</h2>
+        <ul class="rest-list">
+          <li class="rest">
+            <h3>Rolf and Daughters</h3>
+            <p class="blurb">Italian-inspired small plates.</p>
+            <p class="dist">0.3 mi &bull; 7 min walk</p>
+          </li>
+          <li class="rest">
+            <h3>Butchertown Hall</h3>
+            <p class="blurb">Bavarian-Texan meats, biergarten.</p>
+            <p class="dist">0.7 mi &bull; 14 min walk</p>
+          </li>
+          <li class="rest">
+            <h3>Henrietta Red</h3>
+            <p class="blurb">Raw bar, oysters, wood-fired mains.</p>
+            <p class="dist">0.6 mi &bull; 12 min walk</p>
+          </li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="right-col">
+      <section class="panel qr-panel">
+        <p class="label">Guest WiFi</p>
+        <h3>Scan to Connect</h3>
+        <div class="qr-img">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&amp;margin=0&amp;data=WIFI%3AT%3AWPA%3BS%3A1011A2-5G%3BP%3ANashRocks%21%3B%3B" alt="Guest WiFi QR">
+        </div>
+        <p class="qr-caption"><strong>1011A2-5G</strong> &bull; NashRocks!</p>
+      </section>
+
+      <section class="panel qr-panel">
+        <p class="label">Full Guide</p>
+        <h3>Food &amp; Drinks</h3>
+        <div class="qr-img">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&amp;margin=0&amp;data=http%3A%2F%2F192.168.0.217%2Fwelcome_sign.html" alt="Welcome page QR">
+        </div>
+        <p class="qr-caption">Rooftops, happy hour, things to do</p>
+      </section>
+
+      <section class="panel silverthorne">
+        <div class="copy">
+          <p class="lead-sm">Also ours</p>
+          <h4>River West, Silverthorne CO</h4>
+          <p>Rocky Mountain basecamp for skiing, hiking, and river days.</p>
+        </div>
+        <div class="qr-sm">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&amp;margin=0&amp;data=https%3A%2F%2Fwww.airbnb.com%2Frooms%2F920827114586721400" alt="Silverthorne listing">
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    Message <strong>Dan</strong> via the Airbnb app for anything you need
+  </footer>
+
+<script>
+  function fmtDate(iso) {
+    if (!iso) return '';
+    var d = new Date(iso + 'T12:00:00');
+    return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+  fetch('/reservation').then(function (r) { return r.json(); }).then(function (data) {
+    if (!data || !data.ok) return;
+    var el = document.getElementById('stayLine');
+    if (!el) return;
+    if (data.status === 'current' && data.checkout_label) {
+      el.innerHTML = 'You are home through <strong>' + data.checkout_label + '</strong>.';
+    } else if (data.status === 'upcoming' && data.checkin_label) {
+      el.innerHTML = 'Next guest checks in <strong>' + data.checkin_label + '</strong>.';
+    }
+  }).catch(function () {});
+
+  fetch('/events').then(function (r) { return r.json(); }).then(function (data) {
+    var ul = document.getElementById('eventsList');
+    if (!data || !data.ok || !data.events || data.events.length === 0) {
+      ul.innerHTML = '<li class="event"><div class="event-date">&nbsp;</div><div class="event-name">No events found.</div></li>';
+      return;
+    }
+    ul.innerHTML = '';
+    data.events.slice(0, 8).forEach(function (ev) {
+      var li = document.createElement('li');
+      li.className = 'event';
+      li.innerHTML =
+        '<div class="event-date">' + fmtDate(ev.date) + '</div>' +
+        '<div class="event-name">' + ev.name + '</div>' +
+        (ev.venue ? '<div class="event-venue">' + ev.venue + '</div>' : '');
+      ul.appendChild(li);
+    });
+  }).catch(function () {});
+  // Refresh the whole page every 15 minutes to pick up new events
+  setTimeout(function(){ location.reload(); }, 900000);
+</script>
+</body>
+</html>

@@ -158,6 +158,53 @@
     display: block;
     margin-bottom: 0.3vh;
   }
+  .events-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.4vw;
+  }
+  .events-list .card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .event-date {
+    color: var(--accent-hi);
+    font-size: 0.85vw;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    margin: 0 0 0.6vh 0;
+  }
+  .event-name {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    margin: 0 0 0.6vh 0;
+    font-size: 1.4vw;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .event-venue {
+    margin: 0 0 0.4vh 0;
+    color: var(--muted);
+    font-size: 1vw;
+  }
+  .event-segment {
+    margin: 0;
+    color: var(--accent);
+    font-size: 0.8vw;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+  .events-loading, .events-empty {
+    color: var(--muted);
+    font-size: 1.1vw;
+    padding: 2vh 0;
+  }
   .also-check-out {
     margin-top: 7vh;
     padding: 2.5vh 2vw;
@@ -547,6 +594,14 @@
     </ul>
   </section>
 
+  <section>
+    <h2>This week in Nashville</h2>
+    <p class="detail" style="margin-bottom:1.5vh;">Live events near you, updated hourly.</p>
+    <ul class="events-list" id="eventsList">
+      <li class="events-loading">Loading events...</li>
+    </ul>
+  </section>
+
   <section class="also-check-out">
     <div>
       <p class="lead">Also check out our place in the mountains</p>
@@ -563,5 +618,47 @@
   <footer>
     Updated 2026-04-19 15:25
   </footer>
+
+<script>
+  function fmtDate(iso) {
+    if (!iso) return '';
+    var d = new Date(iso + 'T12:00:00');
+    return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+  function fmtTime(t) {
+    if (!t) return '';
+    var parts = t.split(':');
+    var h = parseInt(parts[0], 10);
+    var m = parts[1] || '00';
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    var hh = ((h + 11) % 12) + 1;
+    return hh + ':' + m + ' ' + ampm;
+  }
+  fetch('/events').then(function (r) {
+    return r.json();
+  }).then(function (data) {
+    var ul = document.getElementById('eventsList');
+    if (!data || !data.ok || !data.events || data.events.length === 0) {
+      ul.innerHTML = '<li class="events-empty">No upcoming events found.</li>';
+      return;
+    }
+    ul.innerHTML = '';
+    data.events.slice(0, 12).forEach(function (ev) {
+      var li = document.createElement('li');
+      li.className = 'card';
+      var dateLine = fmtDate(ev.date) + (ev.time ? ' &bull; ' + fmtTime(ev.time) : '');
+      li.innerHTML =
+        '<div>' +
+          '<p class="event-date">' + dateLine + '</p>' +
+          '<p class="event-name">' + ev.name + '</p>' +
+          (ev.venue ? '<p class="event-venue">' + ev.venue + '</p>' : '') +
+        '</div>' +
+        (ev.segment ? '<p class="event-segment">' + ev.segment + '</p>' : '');
+      ul.appendChild(li);
+    });
+  }).catch(function () {
+    document.getElementById('eventsList').innerHTML = '<li class="events-empty">Could not load events right now.</li>';
+  });
+</script>
 </body>
 </html>
