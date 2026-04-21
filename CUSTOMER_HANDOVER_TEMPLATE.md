@@ -11,8 +11,8 @@ A custom guest WiFi system that:
 1. Shows a welcome form on new guests' phones when they connect to WiFi
 2. Logs each guest's name, email, and stay length to a Google Sheet
 3. Sends each guest a verification email with WiFi details
-4. Displays a live welcome sign on your TV with tonight's Nashville events, restaurants, bars, and things to do
-5. Shows "Welcome, [guest name]" on the TV once you've entered the guest name
+4. Shows guests a live welcome page on their phone (restaurants, rooftop bars, happy hour, things to do, tonight's local events) when they scan the QR code on the fridge
+5. Greets them by name on the welcome page once you've entered the guest name via the admin page
 6. Automatically knows when guests are arriving/leaving (pulls from your Airbnb + VRBO calendars)
 
 ---

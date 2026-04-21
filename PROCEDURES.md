@@ -8,9 +8,12 @@ Rinse-and-repeat playbook for deploying this system to a new property. Cut and r
 
 - Captive portal for guest WiFi, collects guest name/email/stay length
 - Logs submissions to Google Sheet, sends verification email
-- Welcome sign on TV and phone/computer with live reservation dates, guest name, local events (Ticketmaster), nearby food/drinks/things-to-do, and cross-promo for other properties
+- Welcome sign on guest's phone with live reservation dates, guest name, local events (Ticketmaster), nearby food/drinks/things-to-do, and cross-promo for other properties
+- Printable QR code for the fridge that opens the welcome page on a guest's phone
 - Admin web page (remote access via Cloudflare Tunnel) to set guest name per reservation
 - Daily 10am email reminder on check-in days
+
+**On display strategy:** the system does NOT run on an always-on TV display. The welcome page is designed for phones/computers. Guests scan a QR code on the fridge (framed for decor) and the welcome page loads on their phone where they can tap through restaurants, events, etc. This works better than a wall display because it's interactive and doesn't require dedicated hardware. A TV-optimized page is available at `/welcome_tv.html` if you ever do want to AirPlay or display it, but the QR-on-fridge flow is the default.
 
 ---
 
@@ -216,7 +219,12 @@ You'll still need to:
 2. Disable 2.4GHz and 5GHz radios (EAP now handles WiFi)
 3. Save
 
-### 5.6 Test
+### 5.6 Print and frame the QR code card
+Open `welcome_qr_printable.html` in a browser, Ctrl+P, save as PDF or print directly. Frame it in a cheap 8x10 frame (~$5 at Target) and put it on the fridge or nightstand. Guests scan with their phone camera and the welcome page loads.
+
+For the WiFi QR card, use `wifi_qr_printable.html`. Print and place next to the welcome QR (or combine into one frame).
+
+### 5.7 Test
 1. Forget WiFi on your phone, reconnect
 2. Captive portal should open `splash.html`
 3. Fill form, verify internet works after
