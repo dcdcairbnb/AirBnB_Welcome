@@ -140,6 +140,13 @@ def collect_config():
     print("      You'll need to manually edit the restaurants/rooftops/things-to-do lists")
     print("      in those files for this customer's city. They start with the Nashville template.")
 
+    print("\n--- TV display (optional) ---")
+    cfg["has_fire_stick"] = ask_yes_no("Does this property have an Amazon Fire Stick on a TV for kiosk display?", default=False)
+    if cfg["has_fire_stick"]:
+        print("  Good. The wizard will include Fire Stick kiosk setup in NEXT_STEPS.md.")
+    else:
+        print("  Default setup uses the printable QR code on the fridge (no TV display).")
+
     return cfg
 
 
@@ -412,8 +419,28 @@ This creates the check, installs the cron job on the Pi, and sends a first ping.
 3. Fill form, confirm you get online
 4. Check Sheet, Gmail, welcome page
 
+{FIRE_STICK_BLOCK}
+
 You're done. Total time: ~2 hours for this customer.
 """
+    fire_stick_block = ""
+    if cfg.get("has_fire_stick"):
+        fire_stick_block = f"""## 11. Set up Fire Stick kiosk display (optional)
+Since this property has a Fire Stick, you can use it to display the welcome page 24/7 on a TV.
+
+1. On the Fire Stick, go to the Appstore and install "Silk Browser" (free, by Amazon).
+2. Open Silk. Set homepage to: http://{cfg['pi_ip']}/welcome_tv.html
+   - Menu -> Settings -> General -> Set Homepage
+3. Install "Fully Kiosk Browser" from the Appstore (free) for auto-start kiosk mode.
+   - Opens URL on boot, prevents navigation away, auto-recovers
+   - Set URL to: http://{cfg['pi_ip']}/welcome_tv.html
+4. Fire Stick Settings -> My Fire TV -> Developer options -> enable "ADB debugging"
+5. Set Fully Kiosk Browser to launch on boot using the Fire Stick's launch-on-boot app setting
+6. Test by unplugging the Fire Stick power, plugging back in - should return to the welcome page within 30 seconds
+
+If the property has Apple TVs too, you can leave them for entertainment use. The Fire Stick handles the welcome display on a dedicated HDMI input.
+"""
+    next_steps = next_steps.replace("{FIRE_STICK_BLOCK}", fire_stick_block)
     with open(out / "NEXT_STEPS.md", "w", encoding="utf-8") as f:
         f.write(next_steps)
 
