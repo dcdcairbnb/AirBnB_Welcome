@@ -122,7 +122,15 @@ sudo bash setup_log_rotation.sh
 - Installs nginx logrotate (14 days, compressed)
 - Prevents the SD card from filling up over time
 
-### 3.12 Install Tailscale for remote SSH admin access
+### 3.12 Set up Healthchecks.io monitoring
+One-time: get an API key from https://healthchecks.io/projects -> API Access.
+
+```bash
+python setup_healthchecks.py customer_config.json YOUR_HC_API_KEY
+```
+Creates a hourly uptime check, installs the cron job on the Pi, and sends first ping. You get an email within 2 hours if the Pi goes offline.
+
+### 3.13 Install Tailscale for remote SSH admin access
 Gives you (the system admin) SSH access to this Pi from anywhere via a stable 100.x.y.z IP.
 
 ```bash

@@ -196,7 +196,7 @@ def generate_kit(cfg):
                  "setup_remote_admin.sh", "setup_log_rotation.sh", "backup_pi_config.sh",
                  "restore_pi_config.sh", "omada-auth.service", "email_tunnel_url.sh",
                  "tunnel-url-watcher.service", "tunnel-url-watcher.timer",
-                 "setup_omada.py"):
+                 "setup_omada.py", "setup_healthchecks.py"):
         src = REPO_ROOT / name
         if src.exists():
             # For now, just copy - the real customer should substitute after understanding
@@ -399,10 +399,12 @@ sudo tailscale up
 ```
 Open the printed URL in your Tailscale admin account.
 
-## 9. Set up Healthchecks.io monitoring
-1. healthchecks.io/projects → Add check named "{cfg['property_name']} Pi"
-2. Copy the ping URL
-3. On the Pi: `(crontab -l; echo "0 * * * * curl -fsS <PING_URL> >/dev/null") | crontab -`
+## 9. Set up Healthchecks.io monitoring (automated)
+Get your Healthchecks.io API key once at https://healthchecks.io/projects -> API Access. Then:
+```
+python setup_healthchecks.py customer_config.json YOUR_HC_API_KEY
+```
+This creates the check, installs the cron job on the Pi, and sends a first ping.
 
 ## 10. Test!
 1. Forget the WiFi on your phone, reconnect
