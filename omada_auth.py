@@ -194,6 +194,9 @@ def admin_post():
         )
     except Exception as e:
         log.warning("Admin save push to Apps Script failed: %s", e)
+    # Invalidate reservation cache so the welcome pages pick up the new name immediately
+    _reservation_cache["data"] = None
+    _reservation_cache["fetched_at"] = 0
     ci, co, src = _fetch_reservation_labels()
     return Response(_admin_html(guest_name, ci, co, src, saved=True), mimetype="text/html")
 
