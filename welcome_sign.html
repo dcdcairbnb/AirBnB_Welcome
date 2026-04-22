@@ -158,6 +158,43 @@
     display: block;
     margin-bottom: 0.3vh;
   }
+  .weather-panel {
+    background: linear-gradient(145deg, var(--panel-hi) 0%, var(--panel) 100%);
+    border-radius: 10px;
+    border-left: 4px solid var(--accent);
+    padding: 2vh 2vw;
+    margin-bottom: 2vh;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 2vw;
+    align-items: center;
+  }
+  .weather-icon {
+    font-size: 3vw;
+    line-height: 1;
+  }
+  .weather-temp {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 3vw;
+    font-weight: 900;
+    color: var(--accent-hi);
+    line-height: 1;
+  }
+  .weather-desc {
+    font-size: 1.1vw;
+    color: var(--ink);
+    margin-top: 0.4vh;
+  }
+  .weather-forecast {
+    text-align: right;
+    font-size: 0.95vw;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .weather-forecast strong {
+    color: var(--accent-hi);
+    font-weight: 700;
+  }
   .events-list {
     list-style: none;
     padding: 0;
@@ -245,6 +282,21 @@
     text-transform: uppercase;
     letter-spacing: 0.2em;
     font-weight: 600;
+  }
+  .also-check-out .referral {
+    margin: 1.2vh 0 0 0;
+    padding: 0.8vh 1vw;
+    background: rgba(244, 183, 82, 0.12);
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    color: var(--ink);
+    font-size: 0.95vw;
+    line-height: 1.4;
+  }
+  .also-check-out .referral strong {
+    color: var(--accent-hi);
+    font-weight: 800;
+    letter-spacing: 0.1em;
   }
   .qr-block {
     text-align: center;
@@ -595,6 +647,18 @@
   </section>
 
   <section>
+    <h2>Nashville weather</h2>
+    <div class="weather-panel" id="weatherPanel">
+      <div class="weather-icon" id="weatherIcon">&#9728;</div>
+      <div>
+        <div class="weather-temp" id="weatherTemp">--&deg;</div>
+        <div class="weather-desc" id="weatherDesc">Loading...</div>
+      </div>
+      <div class="weather-forecast" id="weatherForecast"></div>
+    </div>
+  </section>
+
+  <section>
     <h2>This week in Nashville</h2>
     <p class="detail" style="margin-bottom:1.5vh;">Live events near you, updated hourly.</p>
     <ul class="events-list" id="eventsList">
@@ -608,6 +672,7 @@
       <h3>River West</h3>
       <p class="tagline">Your Rocky Mountain basecamp for skiing, hiking, and river days.</p>
       <p class="where">Silverthorne, Colorado</p>
+      <p class="referral">Book direct and save 10%. Mention code <strong>NASH10</strong> when inquiring.</p>
     </div>
     <div class="qr-block">
       <img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&amp;data=https%3A%2F%2Fwww.airbnb.com%2Frooms%2F920827114586721400" alt="Scan to view River West on Airbnb">
@@ -634,6 +699,36 @@
     var hh = ((h + 11) % 12) + 1;
     return hh + ':' + m + ' ' + ampm;
   }
+  // Weather widget - fetches from wttr.in (no API key needed)
+  fetch('https://wttr.in/Nashville?format=j1').then(function (r) { return r.json(); }).then(function (data) {
+    var cur = (data.current_condition && data.current_condition[0]) || {};
+    var temp = cur.temp_F;
+    var desc = (cur.weatherDesc && cur.weatherDesc[0] && cur.weatherDesc[0].value) || '';
+    var tempEl = document.getElementById('weatherTemp');
+    var descEl = document.getElementById('weatherDesc');
+    var iconEl = document.getElementById('weatherIcon');
+    var forecastEl = document.getElementById('weatherForecast');
+    if (tempEl && temp) tempEl.innerHTML = temp + '&deg;F';
+    if (descEl) descEl.textContent = desc;
+    if (iconEl) {
+      var d = desc.toLowerCase();
+      if (d.indexOf('rain') >= 0 || d.indexOf('drizzle') >= 0) iconEl.innerHTML = '&#127783;';
+      else if (d.indexOf('snow') >= 0) iconEl.innerHTML = '&#10052;';
+      else if (d.indexOf('cloud') >= 0 || d.indexOf('overcast') >= 0) iconEl.innerHTML = '&#9729;';
+      else if (d.indexOf('thunder') >= 0 || d.indexOf('storm') >= 0) iconEl.innerHTML = '&#9928;';
+      else if (d.indexOf('fog') >= 0 || d.indexOf('mist') >= 0) iconEl.innerHTML = '&#127787;';
+      else iconEl.innerHTML = '&#9728;';
+    }
+    if (forecastEl && data.weather && data.weather.length > 1) {
+      var tomorrow = data.weather[1];
+      var hi = tomorrow.maxtempF, lo = tomorrow.mintempF;
+      forecastEl.innerHTML = 'Tomorrow<br><strong>' + hi + '&deg;</strong> / ' + lo + '&deg;';
+    }
+  }).catch(function () {
+    var panel = document.getElementById('weatherPanel');
+    if (panel) panel.style.display = 'none';
+  });
+
   fetch('/reservation').then(function (r) { return r.json(); }).then(function (data) {
     if (!data || !data.ok) return;
     var h1 = document.querySelector('header h1');
