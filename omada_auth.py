@@ -42,6 +42,9 @@ ICAL_URLS = [u.strip() for u in os.environ.get(
     "https://www.vrbo.com/icalendar/da573616bb5a4f2288f4cabcc1dc9bb4.ics?nonTentative",
 ).split(",") if u.strip()]
 RESERVATION_CACHE_TTL = int(os.environ.get("RESERVATION_CACHE_TTL", "1800"))  # 30 min
+OWM_API_KEY = os.environ.get("OWM_API_KEY", "07bfdb13c6b4ea5103aa6e568ec3b017")
+OWM_CITY = os.environ.get("OWM_CITY", "Nashville,TN,US")
+WEATHER_CACHE_TTL = int(os.environ.get("WEATHER_CACHE_TTL", "3600"))  # 1 hour
 # --------------------------------------------------------------------
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -197,6 +200,93 @@ def admin_post():
 
 _events_cache = {"data": None, "fetched_at": 0}
 _reservation_cache = {"data": None, "fetched_at": 0}
+_weather_cache = {"data": None, "fetched_at": 0}
+
+
+@app.route("/weather", methods=["GET"])
+def weather():
+    """Returns current conditions + 5-day daily forecast from OpenWeatherMap."""
+    import datetime as _dt
+    now = time.time()
+    if _weather_cache["data"] and (now - _weather_cache["fetched_at"]) < WEATHER_CACHE_TTL:
+        return jsonify(_weather_cache["data"])
+
+    try:
+        # Current conditions
+        cr = requests.get(
+            "https://api.openweathermap.org/data/2.5/weather",
+            params={"q": OWM_CITY, "appid": OWM_API_KEY, "units": "imperial"},
+            timeout=10,
+        )
+        cr.raise_for_status()
+        cur = cr.json()
+
+        # 5-day forecast in 3-hour blocks
+        fr = requests.get(
+            "https://api.openweathermap.org/data/2.5/forecast",
+            params={"q": OWM_CITY, "appid": OWM_API_KEY, "units": "imperial"},
+            timeout=10,
+        )
+        fr.raise_for_status()
+        fc = fr.json()
+
+        # Group 3-hour blocks by date
+        by_day = {}
+        for block in fc.get("list", []):
+            dt = _dt.datetime.fromtimestamp(block["dt"])
+            date_key = dt.strftime("%Y-%m-%d")
+            temp = block.get("main", {}).get("temp")
+            desc = (block.get("weather") or [{}])[0].get("main", "")
+            icon = (block.get("weather") or [{}])[0].get("icon", "")
+            hour = dt.hour
+            if date_key not in by_day:
+                by_day[date_key] = {
+                    "date": date_key,
+                    "high": temp,
+                    "low": temp,
+                    "midday_desc": desc,
+                    "midday_icon": icon,
+                    "midday_hour_dist": abs(hour - 12),
+                }
+            else:
+                d = by_day[date_key]
+                if temp is not None:
+                    d["high"] = max(d["high"], temp) if d["high"] is not None else temp
+                    d["low"] = min(d["low"], temp) if d["low"] is not None else temp
+                # Prefer the block closest to noon for display icon/desc
+                dist = abs(hour - 12)
+                if dist < d["midday_hour_dist"]:
+                    d["midday_desc"] = desc
+                    d["midday_icon"] = icon
+                    d["midday_hour_dist"] = dist
+
+        days_sorted = sorted(by_day.values(), key=lambda x: x["date"])
+        days_out = []
+        for d in days_sorted[:5]:
+            days_out.append({
+                "date": d["date"],
+                "high": int(round(d["high"])) if d["high"] is not None else None,
+                "low": int(round(d["low"])) if d["low"] is not None else None,
+                "description": d["midday_desc"],
+                "icon": d["midday_icon"],
+            })
+
+        result = {
+            "ok": True,
+            "current": {
+                "temp": int(round(cur.get("main", {}).get("temp", 0))),
+                "description": (cur.get("weather") or [{}])[0].get("description", ""),
+                "icon": (cur.get("weather") or [{}])[0].get("icon", ""),
+            },
+            "days": days_out,
+            "cached_at": int(now),
+        }
+        _weather_cache["data"] = result
+        _weather_cache["fetched_at"] = now
+        return jsonify(result)
+    except Exception as e:
+        log.exception("OpenWeatherMap fetch failed")
+        return jsonify({"ok": False, "error": str(e)}), 500
 
 
 def _parse_ical_dates(text):
