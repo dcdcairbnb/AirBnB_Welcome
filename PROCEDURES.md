@@ -51,16 +51,33 @@ Rinse-and-repeat playbook for deploying this system to a new property. Cut and r
 2. In imager Advanced settings: set hostname (e.g., `{customer}-controller`), enable SSH, set username `pi`, set a strong password, configure WiFi if needed
 3. Boot the Pi, connect via Ethernet to the customer's router
 
-### 3.2 Install Omada Controller
+### 3.2 Install Omada Controller (Docker, recommended)
 ```bash
 ssh pi@<pi-ip>
 sudo apt update && sudo apt upgrade -y
-# Download Omada Controller .deb from tp-link.com (latest v6.x)
-wget <omada-controller-url>
-sudo dpkg -i Omada_Network_Application_*.deb
+sudo apt install -y docker.io
+sudo systemctl enable --now docker
+
+sudo docker run -d \
+  --name omada-controller \
+  --network host \
+  --restart unless-stopped \
+  -v omada-data:/opt/tplink/EAPController/data \
+  -v omada-logs:/opt/tplink/EAPController/logs \
+  mbentley/omada-controller:latest
 ```
+- Wait 3-5 min for initial setup
 - Open `https://<pi-ip>:8043/` in browser, run through wizard
 - Set a strong admin password, note the Omada site name
+
+**IMPORTANT**: Do NOT also install the native Omada Controller package (`tpeap` service). The Docker container and native install conflict on ports 29810-29816 and the Docker one will crash loop. If tpeap exists from a prior install:
+```bash
+sudo systemctl stop tpeap
+sudo systemctl disable tpeap
+# Kill any leftover jsvc processes
+sudo pkill -9 -f jsvc || true
+sudo docker restart omada-controller
+```
 
 ### 3.3 Install nginx + Python
 ```bash
@@ -289,6 +306,18 @@ For the WiFi QR card, use `wifi_qr_printable.html`. Print and place next to the 
 ---
 
 ## 7. Troubleshooting
+
+### Omada Controller Docker container crash-looping with "port already in use"
+- Zombie `jsvc` processes from the native `tpeap` service are holding the Omada ports
+- Check: `sudo ss -tulpn | grep 29810` (if pid shown, that's the zombie)
+- Stop tpeap properly and kill zombies:
+  ```bash
+  sudo systemctl stop tpeap
+  sudo systemctl disable tpeap
+  sudo pkill -9 -f jsvc
+  sudo docker restart omada-controller
+  ```
+- Wait 5 min and verify `sudo docker ps | grep omada` shows "(healthy)"
 
 ### Captive portal doesn't appear when guest connects
 - Check Omada portal is enabled for the SSID
