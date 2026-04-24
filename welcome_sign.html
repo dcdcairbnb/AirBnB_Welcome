@@ -380,9 +380,24 @@
     <div class="house">
       <div><strong>Wi-Fi:</strong> Scan the QR code on the fridge.</div>
       <div><strong>Checkout:</strong> 10:00 AM</div>
-      <div><strong>Contact:</strong> Message Dan via the Airbnb app if you need anything.</div>
+      <div><strong>Contact:</strong> Message Dan via the Airbnb or VRBO app if you need anything.</div>
     </div>
 
+  </section>
+
+  <section>
+    <h2>Nashville weather</h2>
+    <div class="weather-panel" id="weatherPanel">
+      <div class="weather-today">
+        <div class="weather-icon" id="weatherIcon">&#9728;</div>
+        <div>
+          <div class="weather-today-label">Right now</div>
+          <div class="weather-temp" id="weatherTemp">--&deg;</div>
+          <div class="weather-desc" id="weatherDesc">Loading...</div>
+        </div>
+      </div>
+      <div class="weather-week" id="weatherWeek"></div>
+    </div>
   </section>
 
   <section>
@@ -686,21 +701,6 @@
   </section>
 
   <section>
-    <h2>Nashville weather</h2>
-    <div class="weather-panel" id="weatherPanel">
-      <div class="weather-today">
-        <div class="weather-icon" id="weatherIcon">&#9728;</div>
-        <div>
-          <div class="weather-today-label">Right now</div>
-          <div class="weather-temp" id="weatherTemp">--&deg;</div>
-          <div class="weather-desc" id="weatherDesc">Loading...</div>
-        </div>
-      </div>
-      <div class="weather-week" id="weatherWeek"></div>
-    </div>
-  </section>
-
-  <section>
     <h2>This week in Nashville</h2>
     <p class="detail" style="margin-bottom:1.5vh;">Live events near you, updated hourly.</p>
     <ul class="events-list" id="eventsList">
@@ -810,7 +810,7 @@
       return;
     }
     ul.innerHTML = '';
-    data.events.slice(0, 12).forEach(function (ev) {
+    data.events.slice(0, 24).forEach(function (ev) {
       var li = document.createElement('li');
       li.className = 'card';
       var dateLine = fmtDate(ev.date) + (ev.time ? ' &bull; ' + fmtTime(ev.time) : '');
