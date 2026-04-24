@@ -176,6 +176,7 @@ sudo tailscale up
 9. Update `omada_auth.py` APPS_SCRIPT_URL on the Pi with this URL
 10. Run `setupCheckinReminderTrigger` function once from the editor to install the daily 10am email
 11. Run `setupWeeklyBackupTrigger` function once to install Sunday 3am weekly Sheet backup (grant Drive permission when prompted)
+12. (Optional, only if greeting_mode == "auto") Run `autoDetectGuestName` once to grant Gmail access, then `setupAutoDetectTrigger` for the daily 8am Gmail scan. Tell the customer to not delete Airbnb reservation emails.
 
 ### 4.3 Redeploy Pi with updated URL
 ```bash

@@ -147,6 +147,16 @@ def collect_config():
     else:
         print("  Default setup uses the printable QR code on the fridge (no TV display).")
 
+    print("\n--- Guest name greeting ---")
+    print("1 = Auto-detect: scans their Gmail for Airbnb emails + manual admin fallback")
+    print("2 = Manual only: owner sets name via admin page, 10am email reminder")
+    print("3 = Generic: never show guest name, just 'Welcome to [Property]'")
+    while True:
+        choice = ask("Pick 1, 2, or 3", default="2")
+        if choice in ("1", "2", "3"):
+            cfg["greeting_mode"] = {"1": "auto", "2": "manual", "3": "generic"}[choice]
+            break
+
     return cfg
 
 
@@ -222,6 +232,9 @@ def generate_kit(cfg):
         text = text.replace("NashRocks!", cfg["wifi_password"])
         text = text.replace("192.168.0.217", cfg["pi_ip"])
         text = text.replace("living-room.jpg", cfg["hero_image"])
+        # In generic greeting mode, disable the guest name substitution in JS
+        if cfg.get("greeting_mode") == "generic":
+            text = text.replace("data.guest_name", "false /* generic mode */")
         with open(path, "w", encoding="utf-8") as f:
             f.write(text)
 
@@ -333,9 +346,10 @@ Replace the restaurant/rooftop/things-to-do lists with ones for {cfg['property_c
 4. Paste the contents of apps-script-code.gs into Code.gs
 5. Save, Deploy → New deployment → Web app, Execute as: Me, Access: Anyone
 6. Copy the /exec URL from the deployment
-7. Run these once from the Apps Script editor:
-   - setupCheckinReminderTrigger
-   - setupWeeklyBackupTrigger
+7. Run these once from the Apps Script editor (function dropdown, then Run):
+   - setupCheckinReminderTrigger (daily 10am email reminder)
+   - setupWeeklyBackupTrigger (Sunday 3am Sheet backup)
+{AUTO_DETECT_STEP}
 8. Go to the editor, update ICAL_URLS with Ticketmaster API access if you re-authorize
 
 ## 4. Provide the Apps Script URL to the Pi
@@ -447,6 +461,15 @@ Since this property has a Fire Stick, you can use it to display the welcome page
 If the property has Apple TVs too, you can leave them for entertainment use. The Fire Stick handles the welcome display on a dedicated HDMI input.
 """
     next_steps = next_steps.replace("{FIRE_STICK_BLOCK}", fire_stick_block)
+
+    greeting_mode = cfg.get("greeting_mode", "manual")
+    if greeting_mode == "auto":
+        auto_detect_step = "   - autoDetectGuestName (run once to grant Gmail access, then the trigger installs)\n   - setupAutoDetectTrigger (daily 8am Gmail scan for guest name)\n\n**Tell the customer: don't delete Airbnb reservation emails**. Set up a Gmail filter to label them instead."
+    elif greeting_mode == "manual":
+        auto_detect_step = "\nGreeting mode: manual. Customer types guest name in the admin page when a new guest arrives. 10am email reminder will prompt them on check-in day."
+    else:
+        auto_detect_step = "\nGreeting mode: generic. Welcome pages never show a guest name, just 'Welcome to {prop}'. Skip `setupCheckinReminderTrigger` above - no check-in email needed.".format(prop=cfg["property_name"])
+    next_steps = next_steps.replace("{AUTO_DETECT_STEP}", auto_detect_step)
     with open(out / "NEXT_STEPS.md", "w", encoding="utf-8") as f:
         f.write(next_steps)
 
