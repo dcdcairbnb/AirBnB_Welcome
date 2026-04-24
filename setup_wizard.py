@@ -413,6 +413,12 @@ python setup_healthchecks.py customer_config.json YOUR_HC_API_KEY
 ```
 This creates the check, installs the cron job on the Pi, and sends a first ping.
 
+## 9b. Add reservation refresh cron (so 10am email trigger works)
+SSH into the Pi and run:
+```
+(crontab -l 2>/dev/null; echo "*/30 * * * * curl -fsS http://127.0.0.1/reservation > /dev/null") | crontab -
+```
+
 ## 10. Test!
 1. Forget the WiFi on your phone, reconnect
 2. Captive portal should open splash.html

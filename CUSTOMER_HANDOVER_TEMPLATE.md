@@ -68,8 +68,10 @@ Nothing to do. The system:
 You'll get emails when:
 
 1. **Check-in reminder** - 10am on the day a guest checks in, if you haven't set their name yet
-2. **Tunnel URL changed** - if your Pi reboots, the remote admin URL updates (auto-sent)
-3. **iCal URL expired** - if your Airbnb or VRBO calendar export stops working
+2. **Repeat guest alert** - when someone who stayed before submits the WiFi form
+3. **Tunnel URL changed** - if your Pi reboots, the remote admin URL updates (auto-sent)
+4. **iCal URL expired** - if your Airbnb or VRBO calendar export stops working
+5. **Pi offline** - if the Pi loses power or internet for more than 2 hours (Healthchecks.io)
 
 All emails go to: `{HOST_EMAIL}`
 

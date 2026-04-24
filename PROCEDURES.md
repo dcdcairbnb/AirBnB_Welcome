@@ -130,7 +130,16 @@ python setup_healthchecks.py customer_config.json YOUR_HC_API_KEY
 ```
 Creates a hourly uptime check, installs the cron job on the Pi, and sends first ping. You get an email within 2 hours if the Pi goes offline.
 
-### 3.13 Install Tailscale for remote SSH admin access
+### 3.13 Add reservation refresh cron
+Keeps the Google Sheet's Reservation tab current so the 10am check-in reminder trigger always sees today's data.
+
+SSH into the Pi and run:
+```bash
+(crontab -l 2>/dev/null; echo "*/30 * * * * curl -fsS http://127.0.0.1/reservation > /dev/null") | crontab -
+```
+Verify with `crontab -l`.
+
+### 3.14 Install Tailscale for remote SSH admin access
 Gives you (the system admin) SSH access to this Pi from anywhere via a stable 100.x.y.z IP.
 
 ```bash
