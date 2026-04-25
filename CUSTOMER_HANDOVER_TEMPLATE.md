@@ -181,6 +181,29 @@ If the controller is wiped or replaced:
 
 ---
 
+## One-click full backup
+
+Double-click `backup_all.bat` (in your customer folder) to run the full backup chain. Or right-click and Run with PowerShell.
+
+What it does:
+
+- Syncs the live welcome page into the repo
+- Commits and pushes to GitHub with a timestamped message
+- Pulls a fresh Pi config tarball into `customers/{PROPERTY_SLUG}/backups/`
+- Reminds you to export the Omada Controller `.cfg` from the UI
+
+After it finishes, upload the entire `customers/{PROPERTY_SLUG}/backups/` folder to Google Drive.
+
+Run it on the first of each month, plus any time you change WiFi password, swap hardware, or update content.
+
+If the Pi is offsite, pass the Tailscale address:
+
+```
+backup_all.bat pi@100.x.y.z
+```
+
+---
+
 ## Quick reference card
 
 Print and stick this inside your kitchen cabinet:

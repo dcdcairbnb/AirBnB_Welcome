@@ -234,7 +234,8 @@ def generate_kit(cfg):
                  "tunnel-url-watcher.service", "tunnel-url-watcher.timer",
                  "setup_omada.py", "setup_healthchecks.py", "setup_passwordless_sudo.sh",
                  "check_health.sh", "check_health.ps1", "deploy.ps1",
-                 "backup_omada.py", "add_ssid.py"):
+                 "backup_omada.py", "add_ssid.py",
+                 "backup_all.ps1", "backup_all.bat"):
         src = REPO_ROOT / name
         if src.exists():
             # For now, just copy - the real customer should substitute after understanding

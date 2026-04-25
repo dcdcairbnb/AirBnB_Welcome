@@ -203,7 +203,30 @@ python setup_wizard.py --customer-slug <slug> --regen-fridge
 ```
 (Or just edit the data parameter in the URL directly and re-print.)
 
-### 3.17 One-command deploy from your laptop
+### 3.17 One-click full backup
+`backup_all.bat` runs the entire backup chain in one shot. Double-click from File Explorer or run from PowerShell.
+
+What it does:
+1. Copies the live `welcome_sign.html` from your `WelcomeSign` folder into the repo
+2. Copies the live `fridge_wifi_welcome.html` into `customers/<slug>/backups/`
+3. `git add .`, `git commit -m "Backup <timestamp>"`, `git push`
+4. SCPs `backup_pi_config.sh` to the Pi, runs it under sudo, pulls the resulting tarball into `customers/<slug>/backups/`
+5. Prints the manual step for the Omada Controller `.cfg` (UI export)
+
+Run monthly or before any risky change.
+
+```powershell
+.\backup_all.bat
+```
+
+Or for a Tailscale target:
+```powershell
+.\backup_all.bat pi@100.76.203.111
+```
+
+After it completes, upload `customers/<slug>/backups/` to Google Drive.
+
+### 3.18 One-command deploy from your laptop
 After 3.15 is done, you can push code changes with one command:
 ```powershell
 cd C:\Users\dancrose\Documents\AirBnB_Welcome
