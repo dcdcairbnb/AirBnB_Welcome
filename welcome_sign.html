@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta http-equiv="refresh" content="3600" />
 <title>Welcome</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -277,6 +278,31 @@
     letter-spacing: 0.15em;
     line-height: 1.4;
   }
+  .todays-pick {
+    background: var(--accent);
+    color: #fff;
+    padding: 2.4vh 2vw;
+    border-radius: 0.8vw;
+    margin: 0 0 3vh 0;
+  }
+  .todays-pick h2 {
+    color: #fff;
+    margin: 0.4vh 0 0.6vh 0;
+  }
+  .pick-tag {
+    margin: 0;
+    font-size: 0.85vw;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    opacity: 0.85;
+  }
+  .pick-blurb {
+    margin: 0;
+    font-size: 1.1vw;
+    line-height: 1.5;
+    opacity: 0.95;
+  }
   .event-segment {
     margin: 0;
     color: var(--accent);
@@ -374,6 +400,170 @@
     text-transform: uppercase;
     letter-spacing: 0.25em;
   }
+
+  /* Mobile layout: phones and small tablets */
+  @media (max-width: 768px) {
+    body {
+      padding: 24px 16px 40px;
+    }
+    header {
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-size: 56px;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .sub {
+      font-size: 18px;
+    }
+    .dates {
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      margin-top: 8px;
+    }
+    h2 {
+      font-size: 28px;
+      margin-top: 36px;
+      padding-bottom: 6px;
+    }
+    ul, .events-list {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .card {
+      padding: 16px;
+      border-radius: 10px;
+    }
+    h4 {
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+    .blurb {
+      font-size: 15px;
+    }
+    .detail {
+      font-size: 14px;
+    }
+    .distance,
+    .event-distance,
+    .event-date,
+    .event-segment,
+    .pick-tag,
+    .hours {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+    }
+    .event-name {
+      font-size: 17px;
+    }
+    .event-venue {
+      font-size: 14px;
+    }
+
+    .house {
+      grid-template-columns: 1fr;
+      padding: 18px;
+      gap: 14px;
+      font-size: 15px;
+    }
+    .house strong {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+    }
+
+    .weather-panel {
+      grid-template-columns: 1fr;
+      gap: 14px;
+      padding: 16px;
+    }
+    .weather-today {
+      grid-template-columns: auto 1fr;
+      gap: 14px;
+      padding-right: 0;
+      border-right: none;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(184, 198, 206, 0.25);
+    }
+    .weather-icon {
+      font-size: 40px;
+    }
+    .weather-temp {
+      font-size: 36px;
+    }
+    .weather-desc {
+      font-size: 14px;
+    }
+    .weather-today-label {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+    }
+    .weather-week {
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+    }
+    .weather-day .day-name {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+    }
+    .weather-day .day-icon {
+      font-size: 22px;
+    }
+    .weather-day .day-temps {
+      font-size: 12px;
+    }
+
+    .todays-pick {
+      padding: 18px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+    .todays-pick h2 {
+      font-size: 22px;
+      margin-top: 4px;
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .pick-blurb {
+      font-size: 15px;
+    }
+
+    .also-check-out {
+      grid-template-columns: 1fr;
+      gap: 14px;
+      padding: 18px;
+      text-align: center;
+    }
+    .also-check-out .lead {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+    }
+    .also-check-out h3 {
+      font-size: 26px;
+    }
+    .also-check-out .tagline {
+      font-size: 15px;
+    }
+    .also-check-out .where {
+      font-size: 12px;
+    }
+    .qr-block {
+      margin: 0 auto;
+    }
+    .qr-block img {
+      width: 160px;
+      max-width: 60vw;
+    }
+    .qr-block .scan-label {
+      font-size: 11px;
+      margin-top: 6px;
+    }
+
+    footer {
+      font-size: 11px;
+      margin-top: 32px;
+    }
+  }
 </style>
 </head>
 <body>
@@ -382,6 +572,12 @@
     <p class="sub" id="stayLine">Welcome home.</p>
     <p class="dates">Nashville</p>
   </header>
+
+  <section class="todays-pick" id="todaysPick" style="display:none;">
+    <p class="pick-tag" id="pickTag"></p>
+    <h2 id="pickTitle">Today's pick</h2>
+    <p class="pick-blurb" id="pickBlurb"></p>
+  </section>
 
   <section>
     <h2>House info</h2>
@@ -710,6 +906,74 @@
   </section>
 
   <section>
+    <h2>Photo spots</h2>
+    <p class="detail" style="margin-bottom:1.5vh;">Where to grab the shot. Best light is one hour before sunset.</p>
+    <ul class="things-list">
+<li class="card">
+<h4>John Seigenthaler Pedestrian Bridge</h4>
+<p class="detail">Iconic downtown skyline shot framed by the bridge cables. Best at golden hour or after dark with the city lit up.</p>
+<p class="distance">1.5 mi, 5 min drive</p>
+</li>
+<li class="card">
+<h4>Cumberland Park riverfront</h4>
+<p class="detail">Cross the bridge and shoot back at the AT&amp;T "Batman" Building and Nissan Stadium. Wide open angle, no crowds.</p>
+<p class="distance">1.7 mi, 6 min drive</p>
+</li>
+<li class="card">
+<h4>Music Row sign</h4>
+<p class="detail">"Music Row" letters on a wall at 16th and Roy Acuff Place. Classic Nashville selfie spot. Mornings have the best light and fewest people.</p>
+<p class="distance">2.4 mi, 8 min drive</p>
+</li>
+<li class="card">
+<h4>RCA Studio B exterior</h4>
+<p class="detail">1611 Roy Acuff Place. Where Elvis recorded over 200 songs. Plain brick storefront, perfect black-and-white frame.</p>
+<p class="distance">2.4 mi, 8 min drive</p>
+</li>
+<li class="card">
+<h4>Ryman Auditorium alley</h4>
+<p class="detail">5th Ave N alley behind the Ryman, between the building and Layla's. Brick, neon, and stage doors. Pure Music City.</p>
+<p class="distance">1.6 mi, 6 min drive</p>
+</li>
+<li class="card">
+<h4>Broadway honky tonk strip</h4>
+<p class="detail">Stand in the middle of the block at 4th and Broadway looking east. Neon signs stack down the street. Best at dusk.</p>
+<p class="distance">1.7 mi, 6 min drive</p>
+</li>
+<li class="card">
+<h4>The Parthenon at Centennial Park</h4>
+<p class="detail">Full-scale Parthenon replica reflected in the lake. Sunset hits the columns and the water both.</p>
+<p class="distance">2.8 mi, 10 min drive</p>
+</li>
+<li class="card">
+<h4>Bicentennial Capitol Mall State Park</h4>
+<p class="detail">Long open lawn pointing straight at the Tennessee State Capitol. Symmetric columns, fountain in the foreground.</p>
+<p class="distance">0.8 mi, 16 min walk or 3 min drive</p>
+</li>
+<li class="card">
+<h4>The Gulch "What Lifts You" wings mural</h4>
+<p class="detail">302 11th Ave S. Massive feathered angel wings on a brick wall. Most photographed mural in the city. Expect a small line.</p>
+<p class="distance">2.1 mi, 7 min drive</p>
+</li>
+<li class="card">
+<h4>I Believe in Nashville mural</h4>
+<p class="detail">2702 12th Ave S, 12 South neighborhood. Bold red, white, and blue lettering on a barn-style wall. Best mid-morning.</p>
+<p class="distance">3.2 mi, 11 min drive</p>
+</li>
+<li class="card">
+<h4>Fort Negley overlook</h4>
+<p class="detail">Elevated Civil War fort site with a wide-open view of the downtown skyline from the south. Free to enter.</p>
+<p class="distance">2.5 mi, 9 min drive</p>
+</li>
+    </ul>
+  </section>
+
+  <section id="sportsSection" style="display:none;">
+    <h2>Sports while you're here</h2>
+    <p class="detail" style="margin-bottom:1.5vh;">Predators, Titans, Nashville SC, Sounds, and more during your stay.</p>
+    <ul class="events-list" id="sportsList"></ul>
+  </section>
+
+  <section>
     <h2>This week in Nashville</h2>
     <p class="detail" style="margin-bottom:1.5vh;">Live events near you, updated hourly.</p>
     <ul class="events-list" id="eventsList">
@@ -848,6 +1112,62 @@
     });
   }).catch(function () {
     document.getElementById('eventsList').innerHTML = '<li class="events-empty">Could not load events right now.</li>';
+  });
+
+  // Today's pick hero card
+  fetch('/today').then(function (r) {
+    return r.json();
+  }).then(function (data) {
+    if (!data || !data.ok || !data.pick) return;
+    var card = document.getElementById('todaysPick');
+    document.getElementById('pickTag').textContent = data.pick.tag || "Today's pick";
+    document.getElementById('pickTitle').textContent = data.pick.title || '';
+    document.getElementById('pickBlurb').textContent = data.pick.blurb || '';
+    card.style.display = 'block';
+  }).catch(function () {});
+
+  // Sports during stay
+  fetch('/sports').then(function (r) {
+    return r.json();
+  }).then(function (data) {
+    var section = document.getElementById('sportsSection');
+    var ul = document.getElementById('sportsList');
+    if (!data || !data.ok || !data.games || data.games.length === 0) {
+      section.style.display = 'none';
+      return;
+    }
+    section.style.display = '';
+    ul.innerHTML = '';
+    data.games.slice(0, 12).forEach(function (g) {
+      var li = document.createElement('li');
+      li.className = 'card';
+      var dateLine = fmtDate(g.date) + (g.time ? ' &bull; ' + fmtTime(g.time) : '');
+      var venueLine = g.venue || '';
+      var distanceLine = '';
+      if (g.distance_mi != null) {
+        var d = g.distance_mi;
+        var walkMin = Math.round(d * 20);
+        var driveMin = Math.max(3, Math.round(d * 3.5));
+        if (d <= 0.7) {
+          distanceLine = d + ' mi, ' + walkMin + ' min walk';
+        } else if (d <= 1.4) {
+          distanceLine = d + ' mi, ' + walkMin + ' min walk or ' + driveMin + ' min drive';
+        } else {
+          distanceLine = d + ' mi, ' + driveMin + ' min drive';
+        }
+      }
+      li.innerHTML =
+        '<div>' +
+          '<p class="event-date">' + dateLine + '</p>' +
+          '<p class="event-name">' + g.name + '</p>' +
+          (venueLine ? '<p class="event-venue">' + venueLine + '</p>' : '') +
+          (distanceLine ? '<p class="event-distance">' + distanceLine + '</p>' : '') +
+        '</div>' +
+        (g.league ? '<p class="event-segment">' + g.league + '</p>' : '');
+      ul.appendChild(li);
+    });
+  }).catch(function () {
+    document.getElementById('sportsSection').style.display = 'none';
   });
 </script>
 </body>

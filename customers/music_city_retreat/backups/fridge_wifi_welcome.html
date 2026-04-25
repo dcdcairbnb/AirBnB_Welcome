@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Welcome - Music City Retreat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #111111;
+    --ink-soft: #333333;
+    --muted: #666666;
+    --rule: #111111;
+    --panel: #f3f3f3;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', Arial, sans-serif;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .page {
+    width: 8.5in;
+    min-height: 11in;
+    margin: 0 auto;
+    padding: 0.6in 0.55in 0.45in;
+    background: var(--bg);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    page-break-after: always;
+    border: 3px solid var(--ink);
+  }
+  .corner {
+    position: absolute;
+    width: 1.2in;
+    height: 1.2in;
+    color: var(--ink);
+    opacity: 0.85;
+  }
+  .corner.tl { top: 0.25in; left: 0.25in; }
+  .corner.tr { top: 0.25in; right: 0.25in; transform: scaleX(-1); }
+  .corner.bl { bottom: 0.25in; left: 0.25in; transform: scaleY(-1); }
+  .corner.br { bottom: 0.25in; right: 0.25in; transform: scale(-1, -1); }
+  .eyebrow {
+    color: var(--muted);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.35em;
+    font-size: 12px;
+    margin: 0 0 14px 0;
+  }
+  h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 60px;
+    font-weight: 900;
+    line-height: 0.95;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .property {
+    font-size: 18px;
+    color: var(--ink);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin: 0 0 4px 0;
+  }
+  .divider {
+    width: 80px;
+    height: 2px;
+    background: var(--ink);
+    margin: 16px auto 26px;
+  }
+  .qr-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    width: 100%;
+    margin-bottom: 22px;
+  }
+  .qr-card {
+    background: var(--bg);
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    padding: 18px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .qr-step {
+    color: var(--ink);
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin: 0 0 4px 0;
+  }
+  .qr-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 26px;
+    font-weight: 900;
+    color: var(--ink);
+    margin: 0 0 12px 0;
+    letter-spacing: -0.01em;
+  }
+  .qr-frame {
+    background: #fff;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid var(--ink);
+  }
+  .qr-frame img {
+    display: block;
+    width: 2.7in;
+    height: 2.7in;
+  }
+  .qr-caption {
+    margin: 12px 0 0 0;
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+    font-weight: 500;
+  }
+  .qr-caption strong {
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .manual {
+    margin: 6px 0 16px 0;
+    background: var(--panel);
+    border-left: 4px solid var(--ink);
+    padding: 12px 18px;
+    border-radius: 6px;
+    width: 100%;
+    text-align: left;
+  }
+  .manual p {
+    margin: 0;
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .manual .label {
+    color: var(--ink);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 11px;
+    display: inline-block;
+    min-width: 90px;
+  }
+  footer {
+    margin-top: auto;
+    padding-top: 18px;
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+  }
+  @media print {
+    body { background: var(--bg) !important; }
+    .page {
+      background: var(--bg) !important;
+      padding: 0.55in;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- Corner music notes -->
+    <svg class="corner tl" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <!-- Eighth note pair -->
+      <path d="M30 22 L30 70 Q30 82 18 82 Q8 82 8 73 Q8 63 18 63 Q22 63 26 65 L26 28 L60 18 L60 60 Q60 72 48 72 Q38 72 38 63 Q38 53 48 53 Q52 53 56 55 L56 22 Z" fill="currentColor"/>
+      <!-- Beam -->
+      <rect x="26" y="20" width="34" height="6" fill="currentColor"/>
+      <!-- Treble flourish -->
+      <path d="M70 30 Q82 38 82 50 Q82 62 72 66" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Single note higher up -->
+      <circle cx="80" cy="14" r="5" fill="currentColor"/>
+      <rect x="84" y="6" width="2.5" height="14" fill="currentColor"/>
+    </svg>
+    <svg class="corner tr" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M30 22 L30 70 Q30 82 18 82 Q8 82 8 73 Q8 63 18 63 Q22 63 26 65 L26 28 L60 18 L60 60 Q60 72 48 72 Q38 72 38 63 Q38 53 48 53 Q52 53 56 55 L56 22 Z" fill="currentColor"/>
+      <rect x="26" y="20" width="34" height="6" fill="currentColor"/>
+      <path d="M70 30 Q82 38 82 50 Q82 62 72 66" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="80" cy="14" r="5" fill="currentColor"/>
+      <rect x="84" y="6" width="2.5" height="14" fill="currentColor"/>
+    </svg>
+    <svg class="corner bl" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M30 22 L30 70 Q30 82 18 82 Q8 82 8 73 Q8 63 18 63 Q22 63 26 65 L26 28 L60 18 L60 60 Q60 72 48 72 Q38 72 38 63 Q38 53 48 53 Q52 53 56 55 L56 22 Z" fill="currentColor"/>
+      <rect x="26" y="20" width="34" height="6" fill="currentColor"/>
+      <path d="M70 30 Q82 38 82 50 Q82 62 72 66" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="80" cy="14" r="5" fill="currentColor"/>
+      <rect x="84" y="6" width="2.5" height="14" fill="currentColor"/>
+    </svg>
+    <svg class="corner br" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M30 22 L30 70 Q30 82 18 82 Q8 82 8 73 Q8 63 18 63 Q22 63 26 65 L26 28 L60 18 L60 60 Q60 72 48 72 Q38 72 38 63 Q38 53 48 53 Q52 53 56 55 L56 22 Z" fill="currentColor"/>
+      <rect x="26" y="20" width="34" height="6" fill="currentColor"/>
+      <path d="M70 30 Q82 38 82 50 Q82 62 72 66" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="80" cy="14" r="5" fill="currentColor"/>
+      <rect x="84" y="6" width="2.5" height="14" fill="currentColor"/>
+    </svg>
+
+    <p class="eyebrow">Welcome to your stay</p>
+    <h1>Music City Retreat</h1>
+    <div class="divider"></div>
+
+    <div class="qr-row">
+      <div class="qr-card">
+        <p class="qr-step">Step 1</p>
+        <h2 class="qr-title">Join the Wi-Fi</h2>
+        <div class="qr-frame">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=500x500&margin=8&data=WIFI%3AT%3AWPA%3BS%3A1011A2-5G%3BP%3ANashRocks%21%3B%3B" alt="Wi-Fi QR" />
+        </div>
+        <p class="qr-caption">Point your camera. Tap <strong>Join</strong> when it pops up.</p>
+      </div>
+
+      <div class="qr-card">
+        <p class="qr-step">Step 2</p>
+        <h2 class="qr-title">Open the guide</h2>
+        <div class="qr-frame">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=500x500&margin=8&data=http%3A%2F%2F192.168.0.217%2Fwelcome_sign.html" alt="Welcome page QR" />
+        </div>
+        <p class="qr-caption">Restaurants, events, photo spots, weather, and more.</p>
+      </div>
+    </div>
+
+    <div class="manual">
+      <p><span class="label">Wi-Fi</span> 1011A2-5G</p>
+      <p><span class="label">Password</span> NashRocks!</p>
+      <p><span class="label">Web</span> http://192.168.0.217/welcome_sign.html</p>
+    </div>
+
+    <footer>Music City Retreat &middot; Nashville, TN</footer>
+  </div>
+</body>
+</html>

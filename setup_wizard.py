@@ -226,12 +226,15 @@ def generate_kit(cfg):
         json.dump(cfg, f, indent=2)
 
     # Files that get hardcoded config injected
-    for name in ("splash.html", "welcome_sign.html", "welcome_tv.html", "omada_auth.py",
+    for name in ("splash.html", "welcome_sign.html", "welcome_tv.html", "fridge_qr.html",
+                 "omada_auth.py",
                  "apps-script-code.gs", "nginx-default.conf", "setup_omada_auth.sh",
                  "setup_remote_admin.sh", "setup_log_rotation.sh", "backup_pi_config.sh",
                  "restore_pi_config.sh", "omada-auth.service", "email_tunnel_url.sh",
                  "tunnel-url-watcher.service", "tunnel-url-watcher.timer",
-                 "setup_omada.py", "setup_healthchecks.py"):
+                 "setup_omada.py", "setup_healthchecks.py", "setup_passwordless_sudo.sh",
+                 "check_health.sh", "check_health.ps1", "deploy.ps1",
+                 "backup_omada.py", "add_ssid.py"):
         src = REPO_ROOT / name
         if src.exists():
             # For now, just copy - the real customer should substitute after understanding
@@ -254,6 +257,25 @@ def generate_kit(cfg):
         if cfg.get("greeting_mode") == "generic":
             text = text.replace("data.guest_name", "false /* generic mode */")
         with open(path, "w", encoding="utf-8") as f:
+            f.write(text)
+
+    # Templatize the printable fridge QR sign (separate handling because the QR data
+    # parameters need to be URL-encoded, not just text-substituted)
+    fridge_path = out / "fridge_qr.html"
+    if fridge_path.exists():
+        from urllib.parse import quote
+        wifi_qr_payload = f"WIFI:T:WPA;S:{cfg['wifi_ssid']};P:{cfg['wifi_password']};;"
+        welcome_qr_payload = f"http://{cfg['pi_ip']}/welcome_sign.html"
+        with open(fridge_path, "r", encoding="utf-8") as f:
+            text = f.read()
+        text = text.replace("Music City Retreat", cfg["property_name"])
+        text = text.replace("Nashville, TN", f"{cfg.get('location_label', cfg.get('property_city', ''))}, {cfg['property_state']}")
+        text = text.replace("1011A2-5G", cfg["wifi_ssid"])
+        text = text.replace("NashRocks!", cfg["wifi_password"])
+        text = text.replace("192.168.0.217", cfg["pi_ip"])
+        text = text.replace("__WIFI_QR_DATA__", quote(wifi_qr_payload, safe=""))
+        text = text.replace("__WELCOME_QR_DATA__", quote(welcome_qr_payload, safe=""))
+        with open(fridge_path, "w", encoding="utf-8") as f:
             f.write(text)
 
     # Update omada_auth.py

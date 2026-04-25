@@ -170,6 +170,52 @@ sudo tailscale up
 
 **Important**: The customer does NOT need Tailscale on their devices. This is for your remote support only.
 
+### 3.15 Set up passwordless sudo for deploy automation
+Lets `deploy.ps1`, `check_health.ps1`, and `backup_pi_config.sh` run end to end from your laptop without interactive password prompts. Only a focused list of admin commands gets passwordless privilege; everything else still requires the password.
+
+From your laptop:
+```powershell
+scp setup_passwordless_sudo.sh pi@<pi-ip>:/tmp/
+ssh pi@<pi-ip> "sudo bash /tmp/setup_passwordless_sudo.sh"
+```
+Verify:
+```bash
+ssh pi@<pi-ip> "sudo systemctl is-active omada-auth"
+```
+Should return `active` instantly with no password prompt.
+
+The sudoers file lives at `/etc/sudoers.d/airbnb-welcome`. Allowed commands: cp, mv, chown, chmod, systemctl, journalctl, docker, nginx, htpasswd, ss, lsof, tail, cat, and the backup script. Anything else still needs the pi password.
+
+### 3.16 Print the fridge QR sign
+`setup_wizard.py` generates `customers/<slug>/fridge_qr.html`, a single-page printable sign with two QR codes: one to auto-join the Wi-Fi, one to open the welcome page. Black-and-white friendly, music notes in the corners, designed for any home printer.
+
+To print:
+1. Open `customers/<slug>/fridge_qr.html` in your browser
+2. Ctrl+P (or File > Print)
+3. Set paper to **Letter**, margins to **None** or **Minimum**, **Background graphics OFF** is fine since the design is white background
+4. Print and frame for the fridge
+
+The Wi-Fi QR uses standard `WIFI:` format. iOS and modern Android scan it and pop a Join prompt with one tap, no password typing. The welcome QR points at `http://<pi-ip>/welcome_sign.html` so guests on the property's Wi-Fi land directly on the guide.
+
+If the Wi-Fi password contains special characters that confuse the QR encoding, regenerate with:
+```bash
+python setup_wizard.py --customer-slug <slug> --regen-fridge
+```
+(Or just edit the data parameter in the URL directly and re-print.)
+
+### 3.17 One-command deploy from your laptop
+After 3.15 is done, you can push code changes with one command:
+```powershell
+cd C:\Users\dancrose\Documents\AirBnB_Welcome
+.\deploy.ps1
+```
+Pushes `omada_auth.py` and `welcome_sign.html` to the Pi, copies into place, restarts the auth service, and prints the JSON output of `/today` and `/sports` to confirm.
+
+Optional Tailscale target:
+```powershell
+.\deploy.ps1 pi@100.x.y.z
+```
+
 ---
 
 ## 4. One-Time Google Setup (per property)

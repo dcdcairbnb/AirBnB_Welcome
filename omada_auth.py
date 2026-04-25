@@ -204,6 +204,7 @@ def admin_post():
 
 
 _events_cache = {"data": None, "fetched_at": 0}
+_sports_cache = {"data": None, "fetched_at": 0}
 _reservation_cache = {"data": None, "fetched_at": 0}
 _weather_cache = {"data": None, "fetched_at": 0}
 
@@ -539,6 +540,144 @@ def events():
         return jsonify(result)
     except Exception as e:
         log.exception("Ticketmaster fetch failed")
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/sports", methods=["GET"])
+def sports():
+    """Local sports games (Predators, Titans, Nashville SC, Sounds, Stars) within the next 14 days."""
+    now = time.time()
+    if _sports_cache["data"] and (now - _sports_cache["fetched_at"]) < EVENTS_CACHE_TTL:
+        return jsonify(_sports_cache["data"])
+
+    try:
+        start_iso = time.strftime("%Y-%m-%dT00:00:00Z", time.gmtime(now))
+        end_iso = time.strftime("%Y-%m-%dT23:59:59Z", time.gmtime(now + 14 * 86400))
+        r = requests.get(
+            "https://app.ticketmaster.com/discovery/v2/events.json",
+            params={
+                "apikey": TM_API_KEY,
+                "city": TM_CITY,
+                "stateCode": TM_STATE,
+                "classificationName": "Sports",
+                "size": 50,
+                "sort": "date,asc",
+                "startDateTime": start_iso,
+                "endDateTime": end_iso,
+            },
+            timeout=10,
+        )
+        r.raise_for_status()
+        data = r.json()
+        import math as _math
+
+        def _haversine_mi(lat1, lon1, lat2, lon2):
+            R = 3958.8
+            phi1 = _math.radians(lat1)
+            phi2 = _math.radians(lat2)
+            dphi = _math.radians(lat2 - lat1)
+            dlam = _math.radians(lon2 - lon1)
+            a = _math.sin(dphi / 2) ** 2 + _math.cos(phi1) * _math.cos(phi2) * _math.sin(dlam / 2) ** 2
+            c = 2 * _math.atan2(_math.sqrt(a), _math.sqrt(1 - a))
+            return R * c
+
+        out = []
+        for ev in data.get("_embedded", {}).get("events", []):
+            start = ev.get("dates", {}).get("start", {}) or {}
+            venues = ev.get("_embedded", {}).get("venues", []) or []
+            venue_name = venues[0].get("name", "") if venues else ""
+            classifications = ev.get("classifications", []) or []
+            league = ""
+            if classifications:
+                genre = classifications[0].get("genre") or {}
+                league = genre.get("name", "")
+            distance_mi = None
+            if venues:
+                loc = venues[0].get("location") or {}
+                try:
+                    vlat = float(loc.get("latitude"))
+                    vlon = float(loc.get("longitude"))
+                    distance_mi = round(_haversine_mi(PROPERTY_LAT, PROPERTY_LON, vlat, vlon), 1)
+                except (TypeError, ValueError):
+                    pass
+            out.append({
+                "name": ev.get("name", ""),
+                "url": ev.get("url", ""),
+                "date": start.get("localDate", ""),
+                "time": start.get("localTime", ""),
+                "venue": venue_name,
+                "league": league,
+                "distance_mi": distance_mi,
+            })
+        result = {"ok": True, "games": out, "count": len(out), "cached_at": int(now)}
+        _sports_cache["data"] = result
+        _sports_cache["fetched_at"] = now
+        return jsonify(result)
+    except Exception as e:
+        log.exception("Ticketmaster sports fetch failed")
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/today", methods=["GET"])
+def todays_pick():
+    """Auto-pick one recommendation based on time of day, day of week, and weather."""
+    try:
+        import datetime as _dt
+        local_now = _dt.datetime.now()
+        hour = local_now.hour
+        weekday = local_now.weekday()  # 0 = Monday
+        is_weekend = weekday >= 4  # Fri, Sat, Sun
+
+        # Get today's weather from cache or fetch
+        weather_summary = ""
+        is_rainy = False
+        temp_high = 70
+        try:
+            if _weather_cache["data"] and (time.time() - _weather_cache["fetched_at"]) < 3600:
+                wdata = _weather_cache["data"]
+            else:
+                wresp = requests.get(f"http://127.0.0.1:5000/weather", timeout=5)
+                wdata = wresp.json()
+                _weather_cache["data"] = wdata
+                _weather_cache["fetched_at"] = time.time()
+            days = wdata.get("days", []) if wdata.get("ok") else []
+            if days:
+                today_w = days[0]
+                weather_summary = today_w.get("description", "")
+                temp_high = today_w.get("high", 70)
+                is_rainy = "rain" in weather_summary.lower() or "storm" in weather_summary.lower() or "drizzle" in weather_summary.lower()
+        except Exception:
+            pass
+
+        if hour < 11:
+            if is_rainy:
+                pick = {"title": "Cozy breakfast at Pancake Pantry", "blurb": "Classic Nashville diner. Beat the line, get there before 9am. Cash preferred.", "tag": "Morning, Rainy"}
+            else:
+                pick = {"title": "Coffee and walk at Centennial Park", "blurb": "Grab a Bongo Java cold brew, then loop the lake by the Parthenon. 0.6 mi from here.", "tag": "Morning"}
+        elif hour < 17:
+            if is_rainy:
+                pick = {"title": "Country Music Hall of Fame", "blurb": "Two hours of A/C and music history. Plan for 1.5 hours minimum. 1.4 mi.", "tag": "Afternoon, Rainy"}
+            elif temp_high >= 88:
+                pick = {"title": "Float the Cumberland", "blurb": "Tubing or kayak at Foggy Bottom Canoe. Beat the heat on the water.", "tag": "Afternoon, Hot"}
+            elif is_weekend:
+                pick = {"title": "Brunch at The Mockingbird", "blurb": "Walk-in only, get there by noon. Try the chicken biscuit.", "tag": "Weekend Afternoon"}
+            else:
+                pick = {"title": "Stroll Music Row", "blurb": "Walk past RCA Studio B, finish at the Music Row sign for a photo. Free and 2 hours easy.", "tag": "Afternoon"}
+        elif hour < 22:
+            if is_rainy:
+                pick = {"title": "Listening room at The Bluebird Cafe", "blurb": "Original songwriters every night. Reservations help. Where Taylor Swift was discovered.", "tag": "Evening, Rainy"}
+            elif is_weekend:
+                pick = {"title": "Rooftop at Acme Feed & Seed", "blurb": "Live country, downtown views, no cover. Order the hot chicken sandwich.", "tag": "Weekend Evening"}
+            else:
+                pick = {"title": "Hot chicken at Hattie B's", "blurb": "Order Medium. Anything Hot+ is a dare. Sides: pimento mac, black eyed pea salad.", "tag": "Evening"}
+        else:
+            pick = {"title": "Honky tonks on Broadway", "blurb": "Robert's, Tootsies, Legends Corner, all free, all loud, all stay open till 3am. 1.4 mi from here.", "tag": "Late Night"}
+
+        pick["weather_today"] = weather_summary
+        pick["temp_high"] = temp_high
+        return jsonify({"ok": True, "pick": pick})
+    except Exception as e:
+        log.exception("today pick failed")
         return jsonify({"ok": False, "error": str(e)}), 500
 
 
