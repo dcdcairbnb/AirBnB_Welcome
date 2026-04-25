@@ -268,6 +268,15 @@
     color: var(--muted);
     font-size: 1vw;
   }
+  .event-distance {
+    margin: 0.6vh 0 0 0;
+    color: var(--accent);
+    font-size: 0.85vw;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    line-height: 1.4;
+  }
   .event-segment {
     margin: 0;
     color: var(--accent);
@@ -714,7 +723,6 @@
       <h3>River West</h3>
       <p class="tagline">Your Rocky Mountain basecamp for skiing, hiking, and river days.</p>
       <p class="where">Silverthorne, Colorado</p>
-      <p class="referral">Book direct and save 10%. Mention code <strong>NASH10</strong> when inquiring.</p>
     </div>
     <div class="qr-block">
       <img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&amp;data=https%3A%2F%2Fwww.airbnb.com%2Frooms%2F920827114586721400" alt="Scan to view River West on Airbnb">
@@ -814,16 +822,26 @@
       var li = document.createElement('li');
       li.className = 'card';
       var dateLine = fmtDate(ev.date) + (ev.time ? ' &bull; ' + fmtTime(ev.time) : '');
-      var venueLine = '';
-      if (ev.venue) {
-        venueLine = ev.venue;
-        if (ev.distance_mi != null) venueLine += ' &bull; ' + ev.distance_mi + ' mi';
+      var venueLine = ev.venue || '';
+      var distanceLine = '';
+      if (ev.distance_mi != null) {
+        var d = ev.distance_mi;
+        var walkMin = Math.round(d * 20);
+        var driveMin = Math.max(3, Math.round(d * 3.5));
+        if (d <= 0.7) {
+          distanceLine = d + ' mi, ' + walkMin + ' min walk';
+        } else if (d <= 1.4) {
+          distanceLine = d + ' mi, ' + walkMin + ' min walk or ' + driveMin + ' min drive';
+        } else {
+          distanceLine = d + ' mi, ' + driveMin + ' min drive';
+        }
       }
       li.innerHTML =
         '<div>' +
           '<p class="event-date">' + dateLine + '</p>' +
           '<p class="event-name">' + ev.name + '</p>' +
           (venueLine ? '<p class="event-venue">' + venueLine + '</p>' : '') +
+          (distanceLine ? '<p class="event-distance">' + distanceLine + '</p>' : '') +
         '</div>' +
         (ev.segment ? '<p class="event-segment">' + ev.segment + '</p>' : '');
       ul.appendChild(li);
