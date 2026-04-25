@@ -45,6 +45,8 @@ RESERVATION_CACHE_TTL = int(os.environ.get("RESERVATION_CACHE_TTL", "1800"))  # 
 OWM_API_KEY = os.environ.get("OWM_API_KEY", "07bfdb13c6b4ea5103aa6e568ec3b017")
 OWM_CITY = os.environ.get("OWM_CITY", "Nashville,TN,US")
 WEATHER_CACHE_TTL = int(os.environ.get("WEATHER_CACHE_TTL", "3600"))  # 1 hour
+PROPERTY_LAT = float(os.environ.get("PROPERTY_LAT", "36.1738"))  # Germantown, Nashville
+PROPERTY_LON = float(os.environ.get("PROPERTY_LON", "-86.7951"))
 # --------------------------------------------------------------------
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -484,7 +486,7 @@ def events():
                 "apikey": TM_API_KEY,
                 "city": TM_CITY,
                 "stateCode": TM_STATE,
-                "size": 30,
+                "size": 80,
                 "sort": "date,asc",
                 "startDateTime": start_iso,
             },
@@ -492,6 +494,17 @@ def events():
         )
         r.raise_for_status()
         data = r.json()
+        import math as _math
+        def _haversine_mi(lat1, lon1, lat2, lon2):
+            r = 3958.8
+            phi1 = _math.radians(lat1)
+            phi2 = _math.radians(lat2)
+            dphi = _math.radians(lat2 - lat1)
+            dlam = _math.radians(lon2 - lon1)
+            a = _math.sin(dphi / 2) ** 2 + _math.cos(phi1) * _math.cos(phi2) * _math.sin(dlam / 2) ** 2
+            c = 2 * _math.atan2(_math.sqrt(a), _math.sqrt(1 - a))
+            return r * c
+
         out = []
         for ev in data.get("_embedded", {}).get("events", []):
             start = ev.get("dates", {}).get("start", {}) or {}
@@ -502,6 +515,15 @@ def events():
             if classifications:
                 seg = classifications[0].get("segment") or {}
                 segment = seg.get("name", "")
+            distance_mi = None
+            if venues:
+                loc = venues[0].get("location") or {}
+                try:
+                    vlat = float(loc.get("latitude"))
+                    vlon = float(loc.get("longitude"))
+                    distance_mi = round(_haversine_mi(PROPERTY_LAT, PROPERTY_LON, vlat, vlon), 1)
+                except (TypeError, ValueError):
+                    pass
             out.append({
                 "name": ev.get("name", ""),
                 "url": ev.get("url", ""),
@@ -509,6 +531,7 @@ def events():
                 "time": start.get("localTime", ""),
                 "venue": venue_name,
                 "segment": segment,
+                "distance_mi": distance_mi,
             })
         result = {"ok": True, "events": out, "count": len(out), "cached_at": int(now)}
         _events_cache["data"] = result

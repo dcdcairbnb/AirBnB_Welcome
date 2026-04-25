@@ -814,11 +814,16 @@
       var li = document.createElement('li');
       li.className = 'card';
       var dateLine = fmtDate(ev.date) + (ev.time ? ' &bull; ' + fmtTime(ev.time) : '');
+      var venueLine = '';
+      if (ev.venue) {
+        venueLine = ev.venue;
+        if (ev.distance_mi != null) venueLine += ' &bull; ' + ev.distance_mi + ' mi';
+      }
       li.innerHTML =
         '<div>' +
           '<p class="event-date">' + dateLine + '</p>' +
           '<p class="event-name">' + ev.name + '</p>' +
-          (ev.venue ? '<p class="event-venue">' + ev.venue + '</p>' : '') +
+          (venueLine ? '<p class="event-venue">' + venueLine + '</p>' : '') +
         '</div>' +
         (ev.segment ? '<p class="event-segment">' + ev.segment + '</p>' : '');
       ul.appendChild(li);

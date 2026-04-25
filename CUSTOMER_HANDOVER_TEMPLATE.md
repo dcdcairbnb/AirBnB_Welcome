@@ -155,6 +155,32 @@ _Example:_
 
 ---
 
+## Omada backup (how to save network settings)
+
+The Omada Controller holds your WiFi, captive portal, and walled garden config. Auto-backup runs daily at 03:00 and keeps 7 days of backups on the Pi. Pull a manual `.cfg` to Google Drive monthly or before any change.
+
+### Pull a backup from the UI
+
+1. Open `https://{PI_IP}:8043` in your browser
+2. Log in with admin user `{OMADA_ADMIN_USER}` and password `{OMADA_ADMIN_PASSWORD}`
+3. In the **top right**, click the gear icon next to your user avatar. **Or** in the top left, switch the view dropdown from "Site" to "Global"
+4. Click **Maintenance** in the left sidebar
+5. Click the **Backup & Restore** tab
+6. Click **Backup**. A file named `Omada_Controller_Backup_<date>.cfg` downloads to your computer
+7. Upload that file to your Google Drive folder `{PROPERTY_NAME} / Omada Backups`
+
+### Restore from backup
+
+If the controller is wiped or replaced:
+
+1. Open `https://{PI_IP}:8043` and log in
+2. Switch to Global View (same gear icon or view dropdown as above)
+3. **Maintenance** > **Backup & Restore** tab > click **Restore**
+4. Upload the most recent `.cfg` from Google Drive
+5. Controller restarts. All SSIDs, captive portal, walled garden, operator account, and adopted device records come back automatically
+
+---
+
 ## Quick reference card
 
 Print and stick this inside your kitchen cabinet:

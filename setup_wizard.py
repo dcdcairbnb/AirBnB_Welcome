@@ -101,6 +101,24 @@ def collect_config():
     print("\n--- Guest WiFi ---")
     cfg["wifi_ssid"] = ask("Guest WiFi SSID")
     cfg["wifi_password"] = ask("Guest WiFi password")
+    cfg["wifi_band"] = ask("Primary SSID band (dual, 2.4, or 5)", default="dual")
+
+    print("\n--- Extra SSIDs (optional) ---")
+    print("Add any additional networks the EAP should broadcast that use the same splash page.")
+    print("Common use: a 2.4 GHz only SSID for IoT devices or a secondary guest network.")
+    cfg["extra_ssids"] = []
+    while True:
+        more = ask("Add an extra SSID? (y/n)", default="n").lower()
+        if more != "y":
+            break
+        extra_ssid = ask("  SSID name")
+        extra_pw = ask("  Password")
+        extra_band = ask("  Band (dual, 2.4, or 5)", default="2.4")
+        cfg["extra_ssids"].append({
+            "ssid": extra_ssid,
+            "password": extra_pw,
+            "band": extra_band,
+        })
 
     print("\n--- Pi ---")
     cfg["pi_ip"] = ask("Pi local IP address (e.g., 192.168.0.217)")
@@ -491,6 +509,8 @@ If the property has Apple TVs too, you can leave them for entertainment use. The
             "{TUNNEL_URL}": "[fill in after tunnel comes up - see first auto-email]",
             "{OMADA_ADMIN}": "[your Omada Controller admin username]",
             "{OMADA_PASSWORD}": "[your Omada Controller admin password - store in password manager]",
+            "{OMADA_ADMIN_USER}": "[your Omada Controller admin username]",
+            "{OMADA_ADMIN_PASSWORD}": "[your Omada Controller admin password - store in password manager]",
             "{YOUR_EMAIL}": "[your support email]",
             "{YOUR_PHONE}": "[your support phone]",
             "{YOUR_NAME}": "[your name]",

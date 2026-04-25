@@ -208,12 +208,60 @@ sudo systemctl restart omada-auth
 ```bash
 python setup_omada.py <customer_config.json> YOUR_OMADA_ADMIN_USER YOUR_OMADA_ADMIN_PASS
 ```
-Creates operator account, WLAN, portal, and walled garden automatically.
+Creates operator account, WLAN, portal, walled garden, enables daily auto-backup (03:00, 7-day retention), and saves a fresh manual backup to `customers/<slug>/backups/omada_backup_<timestamp>.cfg`.
 
 You'll still need to:
 - Add Apple TV MACs to Authentication-Free Client list (UI)
 - Plug in and adopt the EAP (physical + UI)
 - Update `omada_auth.py` env vars with the operator credentials
+- Copy the generated `.cfg` backup to Google Drive for off-site recovery
+
+### Run backup on demand
+Run this before any risky change (Docker image swap, OS upgrade, hardware move):
+```bash
+python backup_omada.py <customer_config.json> YOUR_OMADA_ADMIN_USER YOUR_OMADA_ADMIN_PASS
+```
+Saves a fresh `.cfg` to `customers/<slug>/backups/`.
+
+#### UI path if you need to pull a backup manually
+Backup & Restore lives in **Global View**, not Site View.
+
+1. Open the controller: `https://<pi-ip>:8043`
+2. In the top right, click the gear icon next to your user avatar, **or** switch the view dropdown in the top left from "Site" to "Global"
+3. Click **Maintenance** in the left sidebar
+4. Click the **Backup & Restore** tab
+5. Click **Backup**. The browser downloads `Omada_Controller_Backup_<date>.cfg`
+6. Move the file to `customers/<slug>/backups/` and upload to Google Drive
+
+### Add a second SSID later
+If a host wants an additional network (e.g., 2.4 GHz only IoT SSID or a secondary guest network) that also routes through the splash page, run:
+```bash
+python add_ssid.py <customer_config.json> ADMIN_USER ADMIN_PASS SSID PASSWORD [BAND]
+```
+BAND options: `dual` (default), `2.4`, `5`.
+
+Example:
+```bash
+python add_ssid.py customers/music_city_retreat/customer_config.json admin MusicCity2026 1011A2 NashRocks! 2.4
+```
+Creates the WLAN on the EAP, binds it to the existing portal, and the EAP starts broadcasting within 60 seconds.
+
+You can also pre-declare extra SSIDs in `customer_config.json` under `extra_ssids`:
+```json
+"extra_ssids": [
+  { "ssid": "1011A2", "password": "NashRocks!", "band": "2.4" }
+]
+```
+`setup_omada.py` will create and bind them during initial setup.
+
+### Restore from backup
+If the controller data is lost or corrupted:
+1. Start a fresh Omada Controller container (wipe `omada-data` volume if needed)
+2. Complete the first-run wizard with the same admin username and password
+3. In the UI, switch to **Global View** (gear icon top right, or view dropdown top left)
+4. Click **Maintenance** > **Backup & Restore** tab > **Restore**
+5. Upload the `.cfg` file from `customers/<slug>/backups/`
+6. Controller restarts. All SSIDs, portal, walled garden, operators, and adopted device records come back
 
 ### Slow path: manual UI
 
@@ -306,6 +354,19 @@ For the WiFi QR card, use `wifi_qr_printable.html`. Print and place next to the 
 ---
 
 ## 7. Troubleshooting
+
+### On-demand health check
+Run a full health snapshot from your laptop. Covers Pi resources, systemd services, Docker, Omada API reachability, Flask auth endpoints, and recent service errors.
+
+From PowerShell:
+```powershell
+.\check_health.ps1 pi@100.76.203.111
+```
+Or direct SSH:
+```bash
+ssh pi@100.76.203.111 'bash -s' < check_health.sh
+```
+Exit code 0 means healthy, 1 means issues found. Each check prints OK, WARN, or FAIL with the reason. Run this before any risky change and after any rebuild.
 
 ### Omada Controller Docker container crash-looping with "port already in use"
 - Zombie `jsvc` processes from the native `tpeap` service are holding the Omada ports
@@ -455,9 +516,17 @@ Script prints the filename (e.g., `/tmp/pi-config-backup-2026-04-21.tar.gz`).
 scp pi@<tailscale-ip>:/tmp/pi-config-backup-*.tar.gz ~/Documents/backups/
 ```
 
+#### Run a fresh Omada Controller backup anytime
+From your laptop:
+```bash
+python backup_omada.py customers/<slug>/customer_config.json admin <ADMIN_PASS>
+```
+Saves `omada_backup_<timestamp>.cfg` to `customers/<slug>/backups/`. Upload to Google Drive for off-site recovery.
+
 #### Recommended backup cadence
-- Monthly, plus any time you make significant config changes
-- Keep at least the last 3 backups in a safe place (external drive, cloud, or second Pi)
+- Pi config tarball: monthly, plus any time you make significant config changes
+- Omada Controller `.cfg`: runs daily at 03:00 automatically (auto-backup, 7-day retention on the Pi). Export to Drive monthly or before any risky change.
+- Keep at least the last 3 backups of each in a safe place (external drive, cloud, or second Pi)
 
 ### 10.3 Rebuilding a dead Pi
 
